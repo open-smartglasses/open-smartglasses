@@ -1,0 +1,106 @@
+{
+  "id": "even-g2",
+  "name": "Even Realities G2",
+  "runtime": "even-hub",
+  "display": {
+    "viewport": {
+      "value": [576, 288],
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/get-started/overview",
+      "checked": "2026-11-12",
+      "note": "Per eye."
+    },
+    "ppd": {
+      "value": null,
+      "grade": "unknown",
+      "checked": "2026-11-12"
+    },
+    "color": {
+      "value": "monochrome-green",
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/get-started/overview",
+      "checked": "2026-11-12"
+    },
+    "levels": {
+      "value": 16,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
+    }
+  },
+  "input": {
+    "gestures": {
+      "value": ["press", "double-press", "swipe-up", "swipe-down", "long-press"],
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/get-started/overview",
+      "checked": "2026-11-12"
+    },
+    "reserved": {
+      "value": ["press-then-long-press"],
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/device-apis",
+      "checked": "2026-11-12",
+      "note": "Opens the system menu."
+    },
+    "eventContainers": {
+      "value": 1,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/device-apis",
+      "checked": "2026-11-12",
+      "note": "Only one container per page receives events."
+    }
+  },
+  "limits": {
+    "imageContainers": {
+      "value": 4,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
+    },
+    "otherContainers": {
+      "value": 8,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
+    },
+    "imageSize": {
+      "value": [288, 144],
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
+    },
+    "listItems": {
+      "value": 20,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
+    },
+    "listItemChars": {
+      "value": 64,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
+    },
+    "textChars": {
+      "value": 1000,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12",
+      "note": "Per text container when a page is created or rebuilt. A full-screen container shows about 400 to 500."
+    }
+  },
+  "hardware": {
+    "camera": {
+      "value": false,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/get-started/overview",
+      "checked": "2026-11-12"
+    },
+    "speaker": {
+      "value": false,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/get-started/overview",
+      "checked": "2026-11-12"
+    }
+  }
+}

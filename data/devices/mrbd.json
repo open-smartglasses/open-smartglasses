@@ -7,7 +7,8 @@
       "value": [600, 600],
       "grade": "docs",
       "source": "https://wearables.developer.meta.com/docs/develop/webapps/build/display-and-layout/",
-      "checked": "2026-11-12"
+      "checked": "2026-11-12",
+      "note": "The size to test at. Meta says not to treat it as fixed."
     },
     "devicePixelRatio": {
       "value": 1,
@@ -34,6 +35,31 @@
       "grade": "docs",
       "source": "https://wearables.developer.meta.com/docs/develop/webapps/wearables-web-app-game-plugin/",
       "checked": "2026-11-12"
+    }
+  },
+  "input": {
+    "events": {
+      "value": ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter"],
+      "grade": "docs",
+      "source": "https://wearables.developer.meta.com/docs/develop/webapps/build/input-and-navigation/",
+      "checked": "2026-11-12",
+      "note": "Gestures arrive as keydown events."
+    },
+    "back": {
+      "value": "history.back()",
+      "grade": "docs",
+      "source": "https://wearables.developer.meta.com/docs/develop/webapps/build/input-and-navigation/",
+      "checked": "2026-11-12",
+      "note": "The system handles the Back gesture. It calls history.back() when there is a previous entry."
+    }
+  },
+  "limits": {
+    "historyEntries": {
+      "value": 5,
+      "grade": "docs",
+      "source": "https://wearables.developer.meta.com/docs/develop/webapps/build/input-and-navigation/",
+      "checked": "2026-11-12",
+      "note": "pushState() entries, the first document included."
     }
   }
 }

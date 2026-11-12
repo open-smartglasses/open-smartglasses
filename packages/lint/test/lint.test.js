@@ -62,3 +62,7 @@ test('a white page with dark text breaks three display rules', async () => {
 test('an unknown device is rejected with the list of known ones', async () => {
   await assert.rejects(() => lint(fixture('good.html'), { device: 'nope', browser }), /Unknown device "nope".*mrbd/);
 });
+
+test('a device without a lint adapter is rejected', async () => {
+  await assert.rejects(() => lint(fixture('good.html'), { device: 'even-g2', browser }), /No lint adapter for Even Realities G2/);
+});

@@ -50,6 +50,9 @@ export function evaluate(page, device) {
 
 export async function lint(target, { device: deviceId = 'mrbd', browser, screenshotPath } = {}) {
   const device = loadDevice(deviceId);
+  if (device.runtime !== 'web') {
+    throw new Error(`No lint adapter for ${device.name} yet (runtime "${device.runtime}").`);
+  }
   const url = toUrl(target);
   const ownBrowser = browser ?? (await launch());
   try {

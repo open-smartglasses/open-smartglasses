@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/open-smartglasses/open-smartglasses/data/schema/device.schema.json",
+  "title": "Device profile",
+  "type": "object",
+  "required": ["id", "name", "runtime", "display"],
+  "additionalProperties": false,
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$" },
+    "name": { "type": "string", "minLength": 1 },
+    "runtime": {
+      "description": "How apps reach the display. The lint needs an adapter for the runtime.",
+      "enum": ["web", "even-hub", "compose-glimmer"]
+    },
+    "display": {
+      "type": "object",
+      "required": ["viewport", "ppd", "color"],
+      "additionalProperties": false,
+      "properties": {
+        "viewport": { "$ref": "#/$defs/fact", "description": "[width, height] in pixels of the area an app draws to." },
+        "devicePixelRatio": { "$ref": "#/$defs/fact" },
+        "ppd": { "$ref": "#/$defs/fact", "description": "Pixels per degree of visual angle." },
+        "color": {
+          "$ref": "#/$defs/fact",
+          "description": "additive-color: black is transparent. monochrome-green: one hue, brightness only."
+        },
+        "levels": { "$ref": "#/$defs/fact", "description": "Brightness levels on a monochrome display." }
+      }
+    },
+    "text": { "$ref": "#/$defs/group", "description": "Text minimums the vendor states, in the unit the vendor uses." },
+    "input": { "$ref": "#/$defs/group", "description": "Gestures, the events they arrive as, and what the system reserves." },
+    "limits": { "$ref": "#/$defs/group", "description": "Hard limits of the runtime." },
+    "hardware": { "$ref": "#/$defs/group", "description": "Sensors and outputs an app can or cannot count on." }
+  },
+  "$defs": {
+    "group": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/fact" }
+    },
+    "fact": {
+      "type": "object",
+      "required": ["value", "grade", "checked"],
+      "additionalProperties": false,
+      "properties": {
+        "value": {},
+        "grade": {
+          "description": "unknown: no usable source. press: reported by media. docs: stated by the vendor. simulator: observed in the vendor simulator. hardware: measured on the device.",
+          "enum": ["unknown", "press", "docs", "simulator", "hardware"]
+        },
+        "source": { "type": "string", "format": "uri" },
+        "checked": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+        "note": { "type": "string" }
+      },
+      "if": { "properties": { "grade": { "const": "unknown" } } },
+      "then": { "properties": { "value": { "type": "null" } } },
+      "else": { "required": ["source"], "properties": { "value": { "not": { "type": "null" } } } }
+    }
+  }
+}

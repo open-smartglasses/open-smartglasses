@@ -1,0 +1,60 @@
+{
+  "id": "android-xr",
+  "name": "Android XR display glasses",
+  "runtime": "compose-glimmer",
+  "display": {
+    "viewport": {
+      "value": null,
+      "grade": "unknown",
+      "checked": "2026-11-12",
+      "note": "Google publishes no resolution. Layout is in dp and sp."
+    },
+    "ppd": {
+      "value": null,
+      "grade": "unknown",
+      "checked": "2026-11-12"
+    },
+    "color": {
+      "value": "additive-color",
+      "grade": "docs",
+      "source": "https://developer.android.com/agents/skills/xr/display-glasses-with-jetpack-compose-glimmer/skill",
+      "checked": "2026-11-12"
+    }
+  },
+  "text": {
+    "minDegrees": {
+      "value": 0.6,
+      "grade": "docs",
+      "source": "https://developer.android.com/design/ui/ai-glasses/guides/styles/type",
+      "checked": "2026-11-12"
+    },
+    "minSp": {
+      "value": 18,
+      "grade": "docs",
+      "source": "https://developer.android.com/agents/skills/xr/display-glasses-with-jetpack-compose-glimmer/skill",
+      "checked": "2026-11-12"
+    }
+  },
+  "input": {
+    "gestures": {
+      "value": ["tap", "swipe"],
+      "grade": "docs",
+      "source": "https://developer.android.com/design/ui/ai-glasses/guides/interaction/inputs",
+      "checked": "2026-11-12",
+      "note": "Single-finger, on the touchpad."
+    },
+    "reserved": {
+      "value": ["swipe-down", "two-finger-swipe", "touch-and-hold"],
+      "grade": "docs",
+      "source": "https://developer.android.com/design/ui/ai-glasses/guides/interaction/inputs",
+      "checked": "2026-11-12",
+      "note": "Back, volume and the assistant."
+    },
+    "back": {
+      "value": "swipe-down",
+      "grade": "docs",
+      "source": "https://developer.android.com/design/ui/ai-glasses/guides/interaction/inputs",
+      "checked": "2026-11-12"
+    }
+  }
+}
