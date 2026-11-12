@@ -1,0 +1,39 @@
+{
+  "id": "mrbd",
+  "name": "Meta Ray-Ban Display",
+  "runtime": "web",
+  "display": {
+    "viewport": {
+      "value": [600, 600],
+      "grade": "docs",
+      "source": "https://wearables.developer.meta.com/docs/develop/webapps/build/display-and-layout/",
+      "checked": "2026-11-12"
+    },
+    "devicePixelRatio": {
+      "value": 1,
+      "grade": "docs",
+      "source": "https://raw.githubusercontent.com/meta/meta-wearables-webapp/main/AGENTS.md",
+      "checked": "2026-11-12"
+    },
+    "ppd": {
+      "value": 42,
+      "grade": "press",
+      "source": "https://uploadvr.com/meta-ray-ban-display-glasses-officially-announced",
+      "checked": "2026-11-12"
+    },
+    "color": {
+      "value": "additive-color",
+      "grade": "docs",
+      "source": "https://wearables.developer.meta.com/docs/develop/webapps/build/display-and-layout/",
+      "checked": "2026-11-12"
+    }
+  },
+  "text": {
+    "minPx": {
+      "value": 16,
+      "grade": "docs",
+      "source": "https://wearables.developer.meta.com/docs/develop/webapps/wearables-web-app-game-plugin/",
+      "checked": "2026-11-12"
+    }
+  }
+}

@@ -6,7 +6,36 @@ For people who build apps for small glasses displays, and for the coding agents 
 
 English · [한국어](./README.ko.md)
 
-**Status:** in development. No release yet.
+**Status:** in development. The lint runs from source; nothing is published to npm yet.
+
+## Try the lint
+
+It runs today for Meta Ray-Ban Display web apps. It needs Node 20+ and Chrome.
+
+```bash
+git clone https://github.com/open-smartglasses/open-smartglasses
+cd open-smartglasses && npm install
+node packages/lint/bin/osg-lint.js https://your-app.example
+```
+
+```
+error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Display.
+       vendor rule, grade: docs, https://wearables.developer.meta.com/docs/...
+       - 11.4px  "World time"  div.row > div.row-main > div.row-sub
+```
+
+Each finding says where its threshold comes from: a vendor rule, a value derived from vendor guidance, or a project rule. Add `--json` for machine-readable output. The exit code is 1 when an error-level rule fails.
+
+Rules so far: `text/min-size`, `text/thin-weight`, `layout/overflow`, `display/bright-fill`.
+
+## Why
+
+We rendered 249 public Ray-Ban Display web apps at 600×600 on 2026-11-12. Of the 219 that show text on the first screen:
+
+- 68% have text below Meta's own 16px minimum.
+- 4% have body text at or above 0.6° of visual angle, the minimum Google gives for display glasses.
+
+The median body text size was 16px, the web default.
 
 ## Contents
 
@@ -24,7 +53,7 @@ English · [한국어](./README.ko.md)
 |---|---|---|
 | Meta Ray-Ban Display | Web Apps | Guidelines, profile, lint, skill |
 | Even Realities G2 | Even Hub | Guidelines, profile, lint, skill |
-| Android XR display glasses | Jetpack Compose Glimmer | Profile, screenshot checks |
+| Android XR display glasses | Jetpack Compose Glimmer | Profile |
 | Rokid, MentraOS | | Profile |
 
 ## Out of scope
@@ -38,7 +67,7 @@ Vendors ship these for their own devices.
 
 ## Roadmap
 
-1. **Common layer** — fact schema, device profiles, guidelines, lint core with the DOM adapter, common skills.
+1. **Common layer** — lint core with the DOM adapter, guidelines, fact schema, device profiles, common skills.
 2. **Second runtime** — Even Hub adapter, platform notes, first eval run on two platforms.
 3. **Hardware verification** — measure on devices and raise facts to the `hardware` grade.
 

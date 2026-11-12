@@ -1,0 +1,20 @@
+{
+  "name": "@open-smartglasses/lint",
+  "version": "0.0.0",
+  "description": "Checks a smart glasses app against the Open Smartglasses guidelines.",
+  "license": "MIT",
+  "type": "module",
+  "bin": { "osg-lint": "bin/osg-lint.js" },
+  "exports": "./src/index.js",
+  "files": ["bin", "src", "devices"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test",
+    "prepack": "node -e \"require('fs').cpSync('../../data/devices','devices',{recursive:true})\""
+  },
+  "dependencies": {
+    "playwright-core": "^1.50.0",
+    "pngjs": "^7.0.0"
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/open-smartglasses/open-smartglasses.git", "directory": "packages/lint" }
+}
