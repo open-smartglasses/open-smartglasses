@@ -26,7 +26,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 
 Each finding says where its threshold comes from: a vendor rule, a value derived from vendor guidance, or a project rule. Add `--json` for machine-readable output. The exit code is 1 when an error-level rule fails.
 
-Rules so far: `text/min-size`, `text/thin-weight`, `layout/overflow`, `display/bright-fill`.
+It has 15 rules for text, color, layout and input. The [guidelines](./guidelines) explain each one and give its source.
 
 ## Why
 
@@ -35,7 +35,7 @@ We rendered 249 public Ray-Ban Display web apps at 600×600 on 2026-11-12. Of th
 - 68% have text below Meta's own 16px minimum.
 - 4% have body text at or above 0.6° of visual angle, the minimum Google gives for display glasses.
 
-The median body text size was 16px, the web default.
+The median body text size was 16px, the web default. Across all the apps that loaded, 53% fix the viewport width at 600px, which Meta's layout guide says not to do.
 
 ## Contents
 

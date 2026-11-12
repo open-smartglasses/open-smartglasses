@@ -26,7 +26,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 
 결과마다 기준의 출처가 붙는다. 벤더 규칙, 벤더 지침에서 유도한 값, 프로젝트 규칙 중 하나다. `--json`을 붙이면 기계가 읽는 형식으로 나온다. error 등급 규칙에 걸리면 종료 코드가 1이다.
 
-지금 있는 규칙: `text/min-size`, `text/thin-weight`, `layout/overflow`, `display/bright-fill`.
+글자, 색, 레이아웃, 입력에 걸쳐 규칙 15개가 있다. 규칙마다 설명과 출처는 [지침](./guidelines)에 있다(영어).
 
 ## 왜 필요한가
 
@@ -35,7 +35,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 - 68%에 Meta 자체 하한인 16px보다 작은 글자가 있다.
 - 본문 글자가 시야각 0.6° 이상인 앱은 4%다. 0.6°는 Google이 디스플레이 안경에 제시한 최소 크기다.
 
-본문 글자 크기의 중앙값은 웹 기본값인 16px이었다.
+본문 글자 크기의 중앙값은 웹 기본값인 16px이었다. 열린 앱 전체로 보면 53%가 뷰포트 너비를 600px로 고정한다. Meta 레이아웃 가이드가 하지 말라고 한 방식이다.
 
 ## 구성
 

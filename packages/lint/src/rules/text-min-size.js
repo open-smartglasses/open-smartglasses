@@ -1,4 +1,5 @@
-const GOOGLE_TYPE = 'https://developer.android.com/design/ui/ai-glasses/guides/styles/type';
+import { GOOGLE_TYPE } from '../sources.js';
+
 const MIN_DEG = 0.6;
 
 const bySize = nodes =>
