@@ -2,8 +2,13 @@
   "name": "open-smartglasses",
   "private": true,
   "license": "MIT",
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "test": "npm test --workspaces --if-present"
+    "test": "npm test --workspaces --if-present",
+    "facts": "node scripts/facts.mjs",
+    "check": "node scripts/facts.mjs --check && node scripts/links.mjs",
+    "watch": "node scripts/watch.mjs"
   }
 }

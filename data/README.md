@@ -2,11 +2,13 @@
 
 One JSON file per device in [`devices`](./devices). The format is [`schema/device.schema.json`](./schema/device.schema.json).
 
+<!-- generated:profiles -->
 | Profile | Device | Runtime | Lint |
 |---|---|---|---|
 | [`mrbd`](./devices/mrbd.json) | Meta Ray-Ban Display | Web Apps | Yes |
 | [`even-g2`](./devices/even-g2.json) | Even Realities G2 | Even Hub | Yes |
 | [`android-xr`](./devices/android-xr.json) | Android XR display glasses | Jetpack Compose Glimmer | No |
+<!-- /generated -->
 
 ## Facts
 
@@ -54,3 +56,9 @@ The lint prints the grade of the fact behind each finding. A rule that needs an 
 ## Changing a fact
 
 Change the value, the source and the `checked` date together. Raise a grade only with a source of that grade. `npm test` validates every profile against the schema.
+
+Then run `npm run facts`. It rewrites the tables generated from the profiles and lists every document that still states the old number. CI fails while any of them disagree.
+
+## Watching the sources
+
+[`watch.json`](./watch.json) lists the vendor packages and repositories the facts come from, with the version each was last checked against. A weekly job opens an issue when one of them changes, or when a fact has not been checked for 180 days. After rechecking, run `node scripts/watch.mjs --update`.

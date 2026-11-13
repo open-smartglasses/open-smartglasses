@@ -13,11 +13,15 @@ Source and reasoning for every rule: https://github.com/open-smartglasses/open-s
 
 Read the device profile before choosing sizes. Profiles are in https://github.com/open-smartglasses/open-smartglasses/tree/main/data/devices
 
-| Device | Screen | Color | Input |
-|---|---|---|---|
-| Meta Ray-Ban Display (`mrbd`) | 600×600 to test at, not fixed. 42 px per degree. | Additive, full color | Arrow keys and Enter. Back is the system's. |
-| Even G2 (`even-g2`) | 576×288 | Green only, 16 levels | Press, double press, swipe up, swipe down, long press |
-| Android XR display glasses (`android-xr`) | Not published. Lay out in dp and sp. | Additive, full color | Tap and swipe. Swipe down is Back. |
+<!-- generated:devices -->
+| Device | Screen | Pixels per degree | Color | Input |
+|---|---|---|---|---|
+| Meta Ray-Ban Display (`mrbd`) | 600×600 | 42 | Additive, full color | Keys: Up, Down, Left, Right, Enter |
+| Even Realities G2 (`even-g2`) | 576×288 | Not published | Green only, 16 levels | press, double press, swipe up, swipe down, long press |
+| Android XR display glasses (`android-xr`) | Not published | Not published | Additive, full color | tap, swipe |
+<!-- /generated -->
+
+Meta's size is the one to test at, not a fixed size. Android XR publishes no resolution: lay out in dp and sp. On Android XR, swipe down is Back.
 
 If the user has not said which device, ask. Then read the note for that platform: https://github.com/open-smartglasses/open-smartglasses/tree/main/skills/platforms
 

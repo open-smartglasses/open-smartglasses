@@ -1,0 +1,18 @@
+{
+  "staleDays": 180,
+  "sources": [
+    {
+      "type": "npm",
+      "package": "@evenrealities/even_hub_sdk",
+      "profiles": ["even-g2"],
+      "seen": "0.0.16"
+    },
+    {
+      "type": "github",
+      "repo": "meta/meta-wearables-webapp",
+      "path": "AGENTS.md",
+      "profiles": ["mrbd"],
+      "seen": "f39fa1ce687015e25f68a9b82791447d88ba584f"
+    }
+  ]
+}
