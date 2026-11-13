@@ -9,12 +9,13 @@ Review the rendered screen, not the source. Sizes and colors in code say little 
 
 ## 1. Run the lint
 
-The lint renders the app at the device's viewport and checks the result. It supports web apps for Meta Ray-Ban Display. It needs Node 20+ and Chrome.
+The lint loads the app and checks what it puts on the display. It supports Meta Ray-Ban Display web apps (`--device mrbd`, the default) and Even G2 apps on Even Hub (`--device even-g2`). It needs Node 20+ and Chrome.
 
 ```bash
 git clone https://github.com/open-smartglasses/open-smartglasses
 cd open-smartglasses && npm install
 node packages/lint/bin/osg-lint.js <url or html file> --json --screenshot screen.png
+node packages/lint/bin/osg-lint.js <url> --device even-g2 --json
 ```
 
 Reuse the clone if it already exists. For an app that is not deployed, start its dev server and pass the local URL.
@@ -37,7 +38,7 @@ Each finding has a `severity`, a `basis` and a `grade`.
 | | `project` | This project's number. No vendor gives one. |
 | `grade` | `docs`, `press`, ... | How well the device fact behind the number is established. |
 
-Open `screen.png` and look at it. The lint checks the first screen only; move through the other screens and run it on each URL or state you can reach.
+On Meta Ray-Ban Display, open `screen.png` and look at it. On Even G2 there is no screenshot; the lint reports the containers of the page the app built. The lint checks the first screen only; move through the other screens and run it on each URL or state you can reach.
 
 ## 3. Check what the lint cannot
 

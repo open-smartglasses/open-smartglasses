@@ -17,8 +17,8 @@ export function format(result, { maxNodes = 5 } = {}) {
 
     const nodes = f.nodes ?? [];
     for (const n of nodes.slice(0, maxNodes)) {
-      const size = n.px != null ? `${n.px}px` : `weight ${n.weight}`;
-      lines.push(`       - ${size}  "${n.text}"  ${n.selector}`);
+      const size = n.px != null ? `${n.px}px  ` : n.weight != null ? `weight ${n.weight}  ` : '';
+      lines.push(`       - ${size}"${n.text}"  ${n.selector}`);
     }
     if (nodes.length > maxNodes) lines.push(`       - and ${nodes.length - maxNodes} more`);
     lines.push('');

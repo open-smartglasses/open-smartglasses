@@ -4,7 +4,10 @@
   "runtime": "even-hub",
   "display": {
     "viewport": {
-      "value": [576, 288],
+      "value": [
+        576,
+        288
+      ],
       "grade": "docs",
       "source": "https://hub.evenrealities.com/docs/get-started/overview",
       "checked": "2026-11-12",
@@ -30,13 +33,21 @@
   },
   "input": {
     "gestures": {
-      "value": ["press", "double-press", "swipe-up", "swipe-down", "long-press"],
+      "value": [
+        "press",
+        "double-press",
+        "swipe-up",
+        "swipe-down",
+        "long-press"
+      ],
       "grade": "docs",
       "source": "https://hub.evenrealities.com/docs/get-started/overview",
       "checked": "2026-11-12"
     },
     "reserved": {
-      "value": ["press-then-long-press"],
+      "value": [
+        "press-then-long-press"
+      ],
       "grade": "docs",
       "source": "https://hub.evenrealities.com/docs/build/device-apis",
       "checked": "2026-11-12",
@@ -64,7 +75,10 @@
       "checked": "2026-11-12"
     },
     "imageSize": {
-      "value": [288, 144],
+      "value": [
+        288,
+        144
+      ],
       "grade": "docs",
       "source": "https://hub.evenrealities.com/docs/build/display",
       "checked": "2026-11-12"
@@ -87,6 +101,19 @@
       "source": "https://hub.evenrealities.com/docs/build/display",
       "checked": "2026-11-12",
       "note": "Per text container when a page is created or rebuilt. A full-screen container shows about 400 to 500."
+    },
+    "textUpgradeChars": {
+      "value": 2000,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12",
+      "note": "Per text update."
+    },
+    "containerNameChars": {
+      "value": 16,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/build/display",
+      "checked": "2026-11-12"
     }
   },
   "hardware": {

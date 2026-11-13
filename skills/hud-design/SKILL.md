@@ -19,7 +19,7 @@ Read the device profile before choosing sizes. Profiles are in https://github.co
 | Even G2 (`even-g2`) | 576×288 | Green only, 16 levels | Press, double press, swipe up, swipe down, long press |
 | Android XR display glasses (`android-xr`) | Not published. Lay out in dp and sp. | Additive, full color | Tap and swipe. Swipe down is Back. |
 
-If the user has not said which device, ask.
+If the user has not said which device, ask. Then read the note for that platform: https://github.com/open-smartglasses/open-smartglasses/tree/main/skills/platforms
 
 ## One screen, one thing
 

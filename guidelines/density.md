@@ -17,7 +17,7 @@ A glasses screen is looked at for a second or two. It should answer one question
 | Device | Limit | Source |
 |---|---|---|
 | Meta Ray-Ban Display | 600×600 is the size to test at, not a fixed size to build for. | [Meta](https://wearables.developer.meta.com/docs/develop/webapps/build/display-and-layout/) |
-| Even G2 | 576×288. A page holds at most 4 image containers and 8 others. A list holds at most 20 items of 64 characters. | [Even](https://hub.evenrealities.com/docs/build/display) |
+| Even G2 | 576×288. A page holds at most 4 image containers and 8 others. A list holds at most 20 items of 64 characters. The lint checks these: `container/count`, `container/bounds`, `list/length`, `text/length`. | [Even](https://hub.evenrealities.com/docs/build/display) |
 
 ## What public apps do
 

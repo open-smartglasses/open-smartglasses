@@ -1,0 +1,9 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>list</title>
+<script>
+  // Sends what the Even Hub SDK sends to its host.
+  const send = (method, data) =>
+    window.flutter_inappwebview.callHandler('evenAppMessage', JSON.stringify({ type: 'call_even_app_method', method, data }));
+  send('createStartUpPageContainer', {"containerTotalNum": 1, "textObject": [], "listObject": [{"xPosition": 0, "yPosition": 0, "width": 576, "height": 288, "containerID": 1, "containerName": "l1", "isEventCapture": 1, "itemContainer": {"itemCount": 22, "itemWidth": 560, "isItemSelectBorderEn": 1, "itemName": ["Stop 0", "Stop 1", "Stop 2", "Stop 3", "Stop 4", "Stop 5", "Stop 6", "Stop 7", "Stop 8", "Stop 9", "Stop 10", "Stop 11", "Stop 12", "Stop 13", "Stop 14", "Stop 15", "Stop 16", "Stop 17", "Stop 18", "Stop 19", "Stop 20", "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"]}}], "imageObject": []});
+</script>

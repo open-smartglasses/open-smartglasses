@@ -5,7 +5,7 @@ One JSON file per device in [`devices`](./devices). The format is [`schema/devic
 | Profile | Device | Runtime | Lint |
 |---|---|---|---|
 | [`mrbd`](./devices/mrbd.json) | Meta Ray-Ban Display | Web Apps | Yes |
-| [`even-g2`](./devices/even-g2.json) | Even Realities G2 | Even Hub | Not yet |
+| [`even-g2`](./devices/even-g2.json) | Even Realities G2 | Even Hub | Yes |
 | [`android-xr`](./devices/android-xr.json) | Android XR display glasses | Jetpack Compose Glimmer | No |
 
 ## Facts

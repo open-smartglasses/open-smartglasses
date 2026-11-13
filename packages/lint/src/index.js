@@ -3,6 +3,8 @@ import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { launch } from './browser.js';
 import { capture } from './capture.js';
+import { captureEven } from './capture-even.js';
+import evenRules from './rules/even.js';
 import { loadDevice, listDevices } from './devices.js';
 import textMinSize from './rules/text-min-size.js';
 import { thinWeight, condensed, darkOnLight } from './rules/text-shape.js';
@@ -11,7 +13,7 @@ import { positiveTabindex, inAppBack, unnamedControl, textEntry, manyChoices } f
 import { background, brightFill, imageAlt } from './rules/display.js';
 
 export { loadDevice, listDevices };
-export const rules = [
+const webRules = [
   textMinSize,
   thinWeight,
   condensed,
@@ -29,6 +31,35 @@ export const rules = [
   imageAlt,
 ];
 
+// One adapter per runtime: how to capture the app, the rules that read the capture, and the numbers worth reporting.
+const adapters = {
+  web: {
+    capture,
+    rules: webRules,
+    metrics: page => ({
+      textNodes: page.texts.length,
+      controls: page.controls.length,
+      smallestTextPx: page.texts.length ? Math.min(...page.texts.map(t => t.px)) : null,
+      litRatio: round(page.pixels.litRatio),
+      brightRatio: round(page.pixels.brightRatio),
+      scrollHeight: page.scrollHeight,
+    }),
+  },
+  'even-hub': {
+    capture: captureEven,
+    rules: evenRules,
+    metrics: page => ({
+      pagesCreated: page.pages,
+      containers: page.containers?.length ?? 0,
+      imageContainers: page.containers?.filter(c => c.kind === 'image').length ?? 0,
+      textUpdates: page.updates.length,
+      hostCalls: page.methods,
+    }),
+  },
+};
+
+export const rules = Object.fromEntries(Object.entries(adapters).map(([runtime, a]) => [runtime, a.rules]));
+
 const round = n => Math.round(n * 1000) / 1000;
 
 export function toUrl(target) {
@@ -40,7 +71,7 @@ export function toUrl(target) {
 
 // Pure: takes a captured page and a device profile, returns findings.
 export function evaluate(page, device) {
-  const findings = rules.flatMap(rule => rule.run({ page, device }).map(f => ({ rule: rule.id, ...f })));
+  const findings = adapters[device.runtime].rules.flatMap(rule => rule.run({ page, device }).map(f => ({ rule: rule.id, ...f })));
   const count = severity => findings.filter(f => f.severity === severity).length;
   return {
     findings,
@@ -50,13 +81,14 @@ export function evaluate(page, device) {
 
 export async function lint(target, { device: deviceId = 'mrbd', browser, screenshotPath } = {}) {
   const device = loadDevice(deviceId);
-  if (device.runtime !== 'web') {
+  const adapter = adapters[device.runtime];
+  if (!adapter) {
     throw new Error(`No lint adapter for ${device.name} yet (runtime "${device.runtime}").`);
   }
   const url = toUrl(target);
   const ownBrowser = browser ?? (await launch());
   try {
-    const page = await capture(ownBrowser, url, device, { screenshotPath });
+    const page = await adapter.capture(ownBrowser, url, device, { screenshotPath });
     const { findings, summary } = evaluate(page, device);
     return {
       url,
@@ -64,14 +96,7 @@ export async function lint(target, { device: deviceId = 'mrbd', browser, screens
       viewport: page.viewport,
       summary,
       findings,
-      metrics: {
-        textNodes: page.texts.length,
-        controls: page.controls.length,
-        smallestTextPx: page.texts.length ? Math.min(...page.texts.map(t => t.px)) : null,
-        litRatio: round(page.pixels.litRatio),
-        brightRatio: round(page.pixels.brightRatio),
-        scrollHeight: page.scrollHeight,
-      },
+      metrics: adapter.metrics(page),
     };
   } finally {
     if (!browser) await ownBrowser.close();

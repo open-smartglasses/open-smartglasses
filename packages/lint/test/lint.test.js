@@ -64,5 +64,5 @@ test('an unknown device is rejected with the list of known ones', async () => {
 });
 
 test('a device without a lint adapter is rejected', async () => {
-  await assert.rejects(() => lint(fixture('good.html'), { device: 'even-g2', browser }), /No lint adapter for Even Realities G2/);
+  await assert.rejects(() => lint(fixture('good.html'), { device: 'android-xr', browser }), /No lint adapter for Android XR/);
 });

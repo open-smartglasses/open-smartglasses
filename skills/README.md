@@ -6,6 +6,8 @@ Instructions for coding agents that build smart glasses apps. They apply to ever
 |---|---|
 | [`hud-design`](./hud-design/SKILL.md) | Read before writing a screen. |
 | [`hud-review`](./hud-review/SKILL.md) | Read after writing one. Runs the lint and a checklist. |
+| [`platforms/mrbd.md`](./platforms/mrbd.md) | Meta Ray-Ban Display: what differs from the common rules. |
+| [`platforms/even-g2.md`](./platforms/even-g2.md) | Even G2: what differs from the common rules. |
 | [`AGENTS.md`](./AGENTS.md) | A short block for agents that do not load skills. |
 
 ## Install

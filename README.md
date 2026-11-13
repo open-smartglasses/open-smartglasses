@@ -10,12 +10,13 @@ English · [한국어](./README.ko.md)
 
 ## Try the lint
 
-It runs today for Meta Ray-Ban Display web apps. It needs Node 20+ and Chrome.
+It checks Meta Ray-Ban Display web apps and Even G2 apps built on Even Hub. It needs Node 20+ and Chrome.
 
 ```bash
 git clone https://github.com/open-smartglasses/open-smartglasses
 cd open-smartglasses && npm install
 node packages/lint/bin/osg-lint.js https://your-app.example
+node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2
 ```
 
 ```
@@ -26,7 +27,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 
 Each finding says where its threshold comes from: a vendor rule, a value derived from vendor guidance, or a project rule. Add `--json` for machine-readable output. The exit code is 1 when an error-level rule fails.
 
-It has 15 rules for text, color, layout and input. The [guidelines](./guidelines) explain each one and give its source.
+For Meta Ray-Ban Display it renders the first screen and runs 15 rules for text, color, layout and input. For Even G2 it stands in for the Even host, records the page the app builds, and runs 9 rules for the limits of that page. The [guidelines](./guidelines) explain each one and give its source.
 
 ## Use with a coding agent
 
@@ -48,7 +49,7 @@ The median body text size was 16px, the web default. Across all the apps that lo
 | **[Guidelines](./guidelines)** | Text legibility, color on additive and monochrome displays, one-dimensional input, information per screen, privacy. Written in angular size, tone and seconds, so they hold across devices. |
 | **[Device profiles](./data)** | Display, input and runtime facts per device: Meta Ray-Ban Display, Even G2, Android XR. Each fact carries its source, the date it was checked, and a grade from `unknown` to `hardware`. |
 | **Lint** | Renders an app headlessly and checks the screenshot against the guidelines. Structural checks run through one adapter per runtime. |
-| **[Agent skills](./skills)** | `hud-design` and `hud-review` for every platform, and an `AGENTS.md` block. |
+| **[Agent skills](./skills)** | `hud-design` and `hud-review` for every platform, a short note per platform, and an `AGENTS.md` block. |
 | **Evals** | Tasks scored on the rendered result, with and without the skills. |
 
 ## Platforms

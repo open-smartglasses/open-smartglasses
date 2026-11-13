@@ -8,7 +8,7 @@ const HELP = `Usage: osg-lint <url or file> [options]
 Options:
   -d, --device <id>       Device profile (default: mrbd). Available: ${listDevices().join(', ')}
       --json              Print the result as JSON
-      --screenshot <png>  Save the rendered screen
+      --screenshot <png>  Save the rendered screen (web apps only)
   -h, --help              Show this help
 
 Exit code is 1 when an error-level rule fails.`;
