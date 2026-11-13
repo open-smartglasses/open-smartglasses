@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=600, height=600, initial-scale=1, user-scalable=no">
+<title>Departures</title>
+<style>
+  /* Additive display: black is transparent, so keep the background pure black,
+     use bright strokes and text, and avoid large filled areas. */
+  :root {
+    --fg: #ffffff;
+    --dim: #a9b4c0;
+    --line: #3a4450;
+    --accent: #5fd0ff;
+    --ok: #7dffa0;
+    --warn: #ffc24a;
+    --bad: #ff7a70;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000; color: var(--fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+  body { display: flex; align-items: center; justify-content: center; }
+  #stage {
+    width: 600px; height: 600px; max-width: 100vw; max-height: 100vh;
+    position: relative; overflow: hidden;
+    padding: 20px 24px 16px;
+    display: flex; flex-direction: column;
+  }
+  .screen { display: none; flex-direction: column; flex: 1; min-height: 0; }
+  .screen.on { display: flex; }
+
+  header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding-bottom: 10px; border-bottom: 2px solid var(--line);
+    flex: none;
+  }
+  header h1 { font-size: 28px; font-weight: 700; letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  header .clock { font-size: 26px; font-weight: 600; color: var(--dim); font-variant-numeric: tabular-nums; padding-left: 12px; }
+
+  .scroll { flex: 1; min-height: 0; overflow: hidden; padding: 6px 0; }
+  .hint { flex: none; font-size: 18px; color: var(--dim); text-align: center; padding-top: 8px; border-top: 2px solid var(--line); }
+
+  /* Departure rows */
+  .row {
+    display: grid;
+    grid-template-columns: 84px 1fr 62px 92px;
+    align-items: center; column-gap: 12px;
+    width: 100%; height: 84px; padding: 0 10px;
+    background: transparent; color: inherit; font: inherit; text-align: left;
+    border: 3px solid transparent; border-radius: 16px;
+    outline: none; cursor: pointer;
+  }
+  .row.sel { border-color: var(--accent); }
+  .badge {
+    font-size: 24px; font-weight: 800; text-align: center;
+    border: 2px solid currentColor; border-radius: 10px; padding: 5px 0;
+    white-space: nowrap;
+  }
+  .dest { min-width: 0; }
+  .dest b { display: block; font-size: 27px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dest span { display: block; font-size: 19px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .plat { text-align: center; }
+  .plat small, .mins small { display: block; font-size: 15px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+  .plat b { font-size: 28px; font-weight: 700; }
+  .mins { text-align: right; font-variant-numeric: tabular-nums; }
+  .mins b { font-size: 34px; font-weight: 800; }
+  .mins.now b { font-size: 28px; color: var(--ok); }
+
+  .s-ok { color: var(--ok); } .s-late { color: var(--warn); } .s-bad { color: var(--bad); }
+
+  /* Detail */
+  .dhead { display: grid; grid-template-columns: 84px 1fr; column-gap: 14px; align-items: center; padding-bottom: 12px; border-bottom: 2px solid var(--line); flex: none; }
+  .dhead .dest b { font-size: 30px; }
+  .facts { display: flex; justify-content: space-between; gap: 10px; padding: 12px 4px; border-bottom: 2px solid var(--line); flex: none; }
+  .facts div small { display: block; font-size: 15px; color: var(--dim); letter-spacing: 1px; text-transform: uppercase; }
+  .facts div b { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stop {
+    display: grid; grid-template-columns: 82px 26px 1fr; column-gap: 10px; align-items: center;
+    height: 54px; padding: 0 8px; border: 3px solid transparent; border-radius: 14px;
+  }
+  .stop.sel { border-color: var(--accent); }
+  .stop time { font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--dim); }
+  .stop .dot { position: relative; height: 54px; }
+  .stop .dot::before { content: ""; position: absolute; left: 11px; top: -3px; bottom: -3px; width: 3px; background: var(--line); }
+  .stop:first-child .dot::before { top: 50%; }
+  .stop:last-child .dot::before { bottom: 50%; }
+  .stop .dot::after { content: ""; position: absolute; left: 4px; top: 50%; width: 13px; height: 13px; margin-top: -9px; border: 3px solid var(--fg); border-radius: 50%; background: #000; }
+  .stop.end .dot::after { background: var(--fg); }
+  .stop span.name { font-size: 25px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stop.end span.name { font-weight: 800; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <section id="list" class="screen on" aria-label="Departures">
+    <header><h1 id="station"></h1><span class="clock" id="clock1"></span></header>
+    <div class="scroll" id="rows" role="listbox"></div>
+    <div class="hint">Swipe to move &middot; Pinch to open</div>
+  </section>
+
+  <section id="detail" class="screen" aria-label="Departure detail">
+    <div class="dhead">
+      <div class="badge" id="dBadge"></div>
+      <div class="dest"><b id="dDest"></b><span id="dStatus"></span></div>
+    </div>
+    <div class="facts">
+      <div><small>Departs</small><b id="dTime"></b></div>
+      <div><small>Platform</small><b id="dPlat"></b></div>
+      <div style="text-align:right"><small>In</small><b id="dMins"></b></div>
+    </div>
+    <div class="scroll" id="stops"></div>
+    <div class="hint">Swipe to scroll &middot; Back to return</div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---------- Sample data (times are offsets in minutes from page load) ----------
+  var STATION = 'Central Station';
+  var DATA = [
+    { line: 'S1',    color: '#7dffa0', dest: 'Harbour East',    plat: '3',  inMin: 2,  delay: 0, every: 20,
+      stops: [['Market Square', 3], ['Old Bridge', 6], ['Riverside', 10], ['Docklands', 14], ['Harbour East', 19]] },
+    { line: 'RE 7',  color: '#ff9a8a', dest: 'Northfield',      plat: '8',  inMin: 5,  delay: 4, every: 60,
+      stops: [['Parkway', 9], ['Elm Junction', 21], ['Stonebrook', 34], ['Lake Vale', 47], ['Northfield', 62]] },
+    { line: 'S3',    color: '#5fd0ff', dest: 'Airport',         plat: '2',  inMin: 8,  delay: 0, every: 15,
+      stops: [['University', 4], ['Tech Park', 9], ['Greenfield', 14], ['Expo Centre', 19], ['Airport', 25]] },
+    { line: 'IC 142', color: '#ffffff', dest: 'Westport',       plat: '11', inMin: 13, delay: 0, every: 120,
+      stops: [['Ashford', 28], ['Millbrook', 55], ['Kingsbury', 83], ['Westport', 118]] },
+    { line: 'S2',    color: '#ffc24a', dest: 'Hillcrest',       plat: '4',  inMin: 17, delay: 2, every: 20,
+      stops: [['City Hall', 2], ['Museum', 5], ['Botanic Garden', 9], ['Orchard Road', 13], ['Summit Park', 18], ['Hillcrest', 23]] },
+    { line: 'RB 22', color: '#d6a8ff', dest: 'Maple Valley',    plat: '6',  inMin: 21, delay: 0, every: 60,
+      stops: [['Southgate', 6], ['Fernhill', 15], ['Brookside', 24], ['Pinewood', 33], ['Maple Valley', 44]] },
+    { line: 'S1',    color: '#7dffa0', dest: 'Harbour East',    plat: '3',  inMin: 22, delay: 0, every: 20,
+      stops: [['Market Square', 3], ['Old Bridge', 6], ['Riverside', 10], ['Docklands', 14], ['Harbour East', 19]] },
+    { line: 'ICE 58', color: '#ffffff', dest: 'Capital City',   plat: '12', inMin: 29, delay: 9, every: 120,
+      stops: [['Kingsbury', 41], ['Eastgate', 88], ['Capital City', 142]] }
+  ];
+
+  var MIN = 60000;
+  var t0 = Date.now();
+  var deps = DATA.map(function (d, i) {
+    return { id: i, line: d.line, color: d.color, dest: d.dest, plat: d.plat, delay: d.delay,
+             every: d.every, stops: d.stops, sched: t0 + d.inMin * MIN + 20000 };
+  });
+
+  // ---------- Helpers ----------
+  function $(id) { return document.getElementById(id); }
+  function hhmm(ms) {
+    var d = new Date(ms);
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  function actual(d) { return d.sched + d.delay * MIN; }
+  function minsLeft(d) { return Math.max(0, Math.floor((actual(d) - Date.now()) / MIN)); }
+  function statusText(d) { return d.delay > 0 ? 'Delayed +' + d.delay + ' min' : 'On time'; }
+  function statusClass(d) { return d.delay >= 5 ? 's-bad' : d.delay > 0 ? 's-late' : 's-ok'; }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  // Trains that have left roll over to their next run so the board never empties.
+  function roll() {
+    var now = Date.now();
+    deps.forEach(function (d) {
+      while (actual(d) < now - 15000) { d.sched += d.every * MIN; d.delay = 0; }
+    });
+    deps.sort(function (a, b) { return actual(a) - actual(b); });
+  }
+
+  // ---------- State ----------
+  var view = 'list';
+  var selId = null;      // selected departure id on the list
+  var openId = null;     // departure shown on the detail screen
+  var stopSel = 0;
+
+  function byId(id) { for (var i = 0; i < deps.length; i++) if (deps[i].id === id) return deps[i]; return null; }
+  function selIndex() { for (var i = 0; i < deps.length; i++) if (deps[i].id === selId) return i; return 0; }
+
+  // ---------- List ----------
+  function renderList() {
+    roll();
+    if (byId(selId) === null) selId = deps[0].id;
+    var box = $('rows');
+    box.textContent = '';
+    deps.forEach(function (d) {
+      var m = minsLeft(d);
+      var row = el('button', 'row' + (d.id === selId ? ' sel' : ''));
+      row.type = 'button';
+      row.setAttribute('role', 'option');
+      row.setAttribute('aria-selected', d.id === selId ? 'true' : 'false');
+      row.dataset.id = d.id;
+
+      var badge = el('div', 'badge', d.line); badge.style.color = d.color;
+      var dest = el('div', 'dest');
+      dest.appendChild(el('b', '', d.dest));
+      dest.appendChild(el('span', statusClass(d), hhmm(actual(d)) + '  ·  ' + statusText(d)));
+      var plat = el('div', 'plat'); plat.appendChild(el('small', '', 'Plat')); plat.appendChild(el('b', '', d.plat));
+      var mins = el('div', 'mins' + (m === 0 ? ' now' : ''));
+      mins.appendChild(el('b', '', m === 0 ? 'Now' : String(m)));
+      mins.appendChild(el('small', '', m === 0 ? ' ' : 'min'));
+
+      row.appendChild(badge); row.appendChild(dest); row.appendChild(plat); row.appendChild(mins);
+      row.setAttribute('aria-label', d.line + ' to ' + d.dest + ', platform ' + d.plat + ', ' +
+        (m === 0 ? 'departing now' : 'in ' + m + ' minutes') + ', ' + statusText(d));
+      row.addEventListener('click', function () { selId = d.id; openDetail(d.id, true); });
+      box.appendChild(row);
+    });
+    revealSel(box, '.row.sel');
+  }
+
+  // Keep the selected element inside the clipped scroll area (no native scrollbars on the display).
+  function revealSel(box, q) {
+    var s = box.querySelector(q);
+    if (!s) return;
+    var top = s.offsetTop - box.offsetTop, bottom = top + s.offsetHeight;
+    var pad = 6;
+    if (top - pad < box.scrollTop) box.scrollTop = top - pad;
+    else if (bottom + pad > box.scrollTop + box.clientHeight) box.scrollTop = bottom + pad - box.clientHeight;
+    if (view === 'list' && s.focus) { try { s.focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  function moveList(delta) {
+    var i = Math.min(deps.length - 1, Math.max(0, selIndex() + delta));
+    selId = deps[i].id;
+    var rows = $('rows').children;
+    for (var k = 0; k < rows.length; k++) {
+      var on = Number(rows[k].dataset.id) === selId;
+      rows[k].classList.toggle('sel', on);
+      rows[k].setAttribute('aria-selected', on ? 'true' : 'false');
+    }
+    revealSel($('rows'), '.row.sel');
+  }
+
+  // ---------- Detail ----------
+  function renderDetail(rebuildStops) {
+    var d = byId(openId);
+    if (!d) return;
+    var m = minsLeft(d);
+    $('dBadge').textContent = d.line; $('dBadge').style.color = d.color;
+    $('dDest').textContent = d.dest;
+    $('dStatus').textContent = statusText(d); $('dStatus').className = statusClass(d);
+    $('dTime').textContent = hhmm(actual(d));
+    $('dPlat').textContent = d.plat;
+    $('dMins').textContent = m === 0 ? 'Now' : m + ' min';
+
+    var box = $('stops');
+    if (rebuildStops) {
+      box.textContent = '';
+      var list = [[STATION, 0]].concat(d.stops);
+      list.forEach(function (s, i) {
+        var r = el('div', 'stop' + (i === 0 || i === list.length - 1 ? ' end' : '') + (i === stopSel ? ' sel' : ''));
+        r.appendChild(el('time', '', hhmm(actual(d) + s[1] * MIN)));
+        r.appendChild(el('div', 'dot'));
+        r.appendChild(el('span', 'name', s[0]));
+        r.addEventListener('click', function () { stopSel = i; markStop(); });
+        box.appendChild(r);
+      });
+      box.scrollTop = 0;
+    }
+    revealSel(box, '.stop.sel');
+  }
+
+  function markStop() {
+    var rows = $('stops').children;
+    for (var k = 0; k < rows.length; k++) rows[k].classList.toggle('sel', k === stopSel);
+    revealSel($('stops'), '.stop.sel');
+  }
+
+  function moveStop(delta) {
+    var n = $('stops').children.length;
+    stopSel = Math.min(n - 1, Math.max(0, stopSel + delta));
+    markStop();
+  }
+
+  function show(name) {
+    view = name;
+    $('list').classList.toggle('on', name === 'list');
+    $('detail').classList.toggle('on', name === 'detail');
+  }
+
+  function openDetail(id, push) {
+    openId = id; stopSel = 0;
+    show('detail');
+    renderDetail(true);
+    if (push) { try { history.pushState({ detail: id }, ''); } catch (e) {} }
+  }
+
+  function closeDetail() {
+    show('list');
+    openId = null;
+    renderList();
+  }
+
+  function goBack() {
+    if (view !== 'detail') return;
+    // Go through history so the system back gesture and in-app back stay in sync.
+    if (history.state && history.state.detail != null) { try { history.back(); return; } catch (e) {} }
+    closeDetail();
+  }
+
+  window.addEventListener('popstate', function () { if (view === 'detail') closeDetail(); });
+
+  // ---------- Input: D-pad style (swipes arrive as arrow keys, pinch as Enter) ----------
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (view === 'list') {
+      if (k === 'ArrowDown') { moveList(1); e.preventDefault(); }
+      else if (k === 'ArrowUp') { moveList(-1); e.preventDefault(); }
+      else if (k === 'Enter' || k === ' ' || k === 'ArrowRight') { openDetail(selId, true); e.preventDefault(); }
+    } else {
+      if (k === 'ArrowDown') { moveStop(1); e.preventDefault(); }
+      else if (k === 'ArrowUp') { moveStop(-1); e.preventDefault(); }
+      else if (k === 'Escape' || k === 'Backspace' || k === 'ArrowLeft' || k === 'BrowserBack' || k === 'GoBack') {
+        goBack(); e.preventDefault();
+      }
+    }
+  });
+
+  // ---------- Clock / refresh ----------
+  function tick() {
+    $('clock1').textContent = hhmm(Date.now());
+    if (view === 'list') renderList();
+    else { roll(); if (byId(openId)) renderDetail(false); }
+  }
+
+  $('station').textContent = STATION;
+  try { history.replaceState({}, ''); } catch (e) {}
+  tick();
+  setInterval(tick, 5000);
+})();
+</script>
+</body>
+</html>

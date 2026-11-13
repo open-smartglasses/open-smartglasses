@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=600, height=600, initial-scale=1, user-scalable=no">
+<title>Cook Along</title>
+<style>
+  /* Target: 600 x 600 px monocular additive display.
+     Black is transparent on the lens, so the page stays black and
+     only text, thin outlines and small accents are lit. */
+  :root {
+    --fg: #ffffff;
+    --dim: #a9b0b8;
+    --accent: #ffb84d;
+    --ok: #6fe08a;
+    --line: #3a4048;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000; color: var(--fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  #stage {
+    position: absolute; left: 50%; top: 50%;
+    width: 600px; height: 600px;
+    margin: -300px 0 0 -300px;
+    transform-origin: 50% 50%;
+    padding: 28px 36px 24px;
+    display: flex; flex-direction: column;
+  }
+  header {
+    flex: none; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 12px;
+  }
+  header .title {
+    font-size: 30px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  header .count {
+    flex: none; margin-left: 16px;
+    font-size: 26px; font-weight: 600; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  main {
+    flex: 1; min-height: 0;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 14px 0;
+  }
+  footer {
+    flex: none; height: 52px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  button {
+    font: inherit; color: inherit; background: none; border: none;
+    cursor: pointer; outline: none;
+  }
+  .hint {
+    font-size: 22px; font-weight: 600; color: var(--dim);
+    padding: 8px 14px; border: 2px solid var(--line); border-radius: 26px;
+    white-space: nowrap;
+  }
+  .hint.primary { color: #000; background: var(--accent); border-color: var(--accent); }
+  .hint.ghost { border-color: transparent; padding-left: 0; padding-right: 0; }
+
+  /* Recipe picker */
+  .recipe {
+    display: flex; align-items: center; gap: 18px;
+    width: 100%; height: 124px; margin: 5px 0;
+    padding: 0 20px; text-align: left;
+    border: 3px solid var(--line); border-radius: 22px;
+  }
+  .recipe .num {
+    flex: none; width: 52px; height: 52px; border-radius: 50%;
+    border: 2px solid var(--dim); color: var(--dim);
+    font-size: 26px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .recipe .name { font-size: 32px; font-weight: 700; line-height: 1.15; }
+  .recipe .meta { font-size: 23px; color: var(--dim); margin-top: 6px; }
+  .recipe.focus { border-color: var(--accent); }
+  .recipe.focus .num { border-color: var(--accent); color: var(--accent); }
+  .recipe.focus .meta { color: var(--fg); }
+
+  /* Ingredients */
+  .ing {
+    display: flex; align-items: baseline; gap: 16px;
+    height: 66px; padding-top: 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 30px;
+  }
+  .ing:last-child { border-bottom: none; }
+  .ing .qty {
+    flex: none; width: 150px; text-align: right;
+    color: var(--accent); font-weight: 700;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .ing .what { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  main.top { justify-content: flex-start; }
+
+  /* Steps */
+  .bar { flex: none; display: flex; gap: 6px; height: 8px; margin-top: 14px; }
+  .bar i { flex: 1; border-radius: 4px; background: var(--line); }
+  .bar i.done { background: var(--dim); }
+  .bar i.now { background: var(--accent); }
+  .step { font-size: 38px; font-weight: 600; line-height: 1.28; }
+  .timer {
+    align-self: flex-start; margin-top: 22px;
+    font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums;
+    padding: 8px 20px; border: 3px solid var(--line); border-radius: 30px;
+    color: var(--dim);
+  }
+  .timer.run { border-color: var(--accent); color: var(--accent); }
+  .timer.up { border-color: var(--ok); color: var(--ok); animation: pulse 1s ease-in-out infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  /* Done */
+  .done { text-align: center; }
+  .done .big { font-size: 56px; font-weight: 800; color: var(--ok); }
+  .done .sub { font-size: 30px; color: var(--dim); margin-top: 14px; }
+  @media (prefers-reduced-motion: reduce) { .timer.up { animation: none; } }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var RECIPES = [
+    {
+      name: "Garlic Butter Pasta",
+      time: "20 min", serves: 2,
+      ingredients: [
+        ["200 g", "spaghetti"],
+        ["4 cloves", "garlic, sliced"],
+        ["40 g", "butter"],
+        ["2 tbsp", "olive oil"],
+        ["1 pinch", "chili flakes"],
+        ["30 g", "parmesan, grated"],
+        ["1 handful", "parsley, chopped"],
+        ["", "salt and pepper"]
+      ],
+      steps: [
+        { text: "Bring a large pot of salted water to a boil." },
+        { text: "Cook the spaghetti until just tender.", timer: 540 },
+        { text: "Scoop out a cup of pasta water, then drain." },
+        { text: "Melt butter with the oil over low heat. Add garlic and chili.", timer: 120 },
+        { text: "Toss the pasta in the pan with a splash of pasta water." },
+        { text: "Stir in parmesan and parsley. Season and serve." }
+      ]
+    },
+    {
+      name: "Veggie Fried Rice",
+      time: "25 min", serves: 3,
+      ingredients: [
+        ["3 cups", "cooked rice, cold"],
+        ["2", "eggs, beaten"],
+        ["1", "carrot, diced"],
+        ["1/2 cup", "peas"],
+        ["3", "spring onions"],
+        ["2 cloves", "garlic, minced"],
+        ["2 tbsp", "soy sauce"],
+        ["1 tsp", "sesame oil"],
+        ["2 tbsp", "cooking oil"]
+      ],
+      steps: [
+        { text: "Heat half the oil in a wok over high heat." },
+        { text: "Scramble the eggs until just set. Set them aside." },
+        { text: "Add the rest of the oil. Fry carrot and garlic.", timer: 180 },
+        { text: "Add rice and peas. Break up clumps and stir-fry.", timer: 240 },
+        { text: "Pour in soy sauce and sesame oil. Toss well." },
+        { text: "Fold in the eggs and spring onions. Serve hot." }
+      ]
+    },
+    {
+      name: "Banana Pancakes",
+      time: "15 min", serves: 2,
+      ingredients: [
+        ["1", "ripe banana"],
+        ["1", "egg"],
+        ["150 ml", "milk"],
+        ["120 g", "flour"],
+        ["1 tsp", "baking powder"],
+        ["1 pinch", "salt"],
+        ["1 tbsp", "butter, for the pan"],
+        ["", "maple syrup, to serve"]
+      ],
+      steps: [
+        { text: "Mash the banana in a bowl until smooth." },
+        { text: "Whisk in the egg and milk." },
+        { text: "Add flour, baking powder and salt. Stir until just combined." },
+        { text: "Melt a little butter in a pan over medium heat." },
+        { text: "Pour in a ladle of batter. Cook until bubbles form.", timer: 120 },
+        { text: "Flip and cook the other side until golden.", timer: 60 },
+        { text: "Repeat with the rest of the batter. Serve with syrup." }
+      ]
+    }
+  ];
+
+  var PER_PAGE = 5;
+  var stage = document.getElementById("stage");
+
+  var s = {
+    screen: "home",   // home | ingredients | step | done
+    pick: 0,          // focused recipe on home
+    recipe: 0,
+    page: 0,
+    step: 0,
+    left: 0,          // timer seconds remaining
+    running: false,
+    up: false
+  };
+  var tick = null;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function btn(cls, text, fn) {
+    var b = el("button", cls, text);
+    b.type = "button";
+    b.tabIndex = -1;
+    b.addEventListener("click", function (e) { e.stopPropagation(); fn(); });
+    return b;
+  }
+  function fmt(sec) {
+    var m = Math.floor(sec / 60), r = sec % 60;
+    return m + ":" + (r < 10 ? "0" : "") + r;
+  }
+
+  /* ---------- actions ---------- */
+  function stopTimer() {
+    if (tick) { clearInterval(tick); tick = null; }
+    s.running = false;
+  }
+  function loadStep(i) {
+    stopTimer();
+    s.step = i;
+    s.left = RECIPES[s.recipe].steps[i].timer || 0;
+    s.up = false;
+  }
+  function go(screen) { stopTimer(); s.screen = screen; render(); }
+
+  function openRecipe(i) { s.pick = i; s.recipe = i; s.page = 0; go("ingredients"); }
+  function startCooking() { loadStep(0); s.screen = "step"; render(); }
+  function nextStep() {
+    var n = RECIPES[s.recipe].steps.length;
+    if (s.step + 1 >= n) { go("done"); return; }
+    loadStep(s.step + 1); render();
+  }
+  function prevStep() {
+    if (s.step === 0) { go("ingredients"); return; }
+    loadStep(s.step - 1); render();
+  }
+  function toggleTimer() {
+    var st = RECIPES[s.recipe].steps[s.step];
+    if (!st.timer) return;
+    if (s.up || s.left <= 0) { s.left = st.timer; s.up = false; }
+    if (s.running) {
+      stopTimer();
+    } else {
+      s.running = true;
+      tick = setInterval(function () {
+        s.left -= 1;
+        if (s.left <= 0) { s.left = 0; s.up = true; stopTimer(); }
+        paintTimer();
+      }, 1000);
+    }
+    paintTimer();
+    paintFooter();
+  }
+  function pages() {
+    return Math.ceil(RECIPES[s.recipe].ingredients.length / PER_PAGE);
+  }
+  function turnPage(d) {
+    var p = s.page + d;
+    if (p < 0 || p >= pages()) return;
+    s.page = p; render();
+  }
+
+  /* ---------- rendering ---------- */
+  var timerNode = null, footerNode = null;
+
+  function paintTimer() {
+    if (!timerNode) return;
+    timerNode.className = "timer" + (s.up ? " up" : s.running ? " run" : "");
+    timerNode.textContent = s.up ? "Time's up" : "⏱ " + fmt(s.left);
+  }
+  function paintFooter() {
+    if (!footerNode || s.screen !== "step") return;
+    footerNode.textContent = "";
+    var r = RECIPES[s.recipe], st = r.steps[s.step];
+    footerNode.appendChild(btn("hint", "◀ Back", prevStep));
+    if (st.timer) {
+      footerNode.appendChild(btn("hint", s.running ? "▼ Pause" : "▼ Timer", toggleTimer));
+    }
+    footerNode.appendChild(btn("hint primary",
+      s.step + 1 >= r.steps.length ? "Finish ▶" : "Next ▶", nextStep));
+  }
+
+  function render() {
+    stage.textContent = "";
+    timerNode = null;
+    var head = el("header"), main = el("main"), foot = el("footer");
+    footerNode = foot;
+    var r = RECIPES[s.recipe];
+
+    if (s.screen === "home") {
+      head.appendChild(el("div", "title", "What are we cooking?"));
+      RECIPES.forEach(function (rec, i) {
+        var b = btn("recipe" + (i === s.pick ? " focus" : ""), null, function () { openRecipe(i); });
+        b.appendChild(el("div", "num", String(i + 1)));
+        var t = el("div");
+        t.appendChild(el("div", "name", rec.name));
+        t.appendChild(el("div", "meta", rec.time + " · serves " + rec.serves + " · " + rec.steps.length + " steps"));
+        b.appendChild(t);
+        main.appendChild(b);
+      });
+      foot.appendChild(el("div", "hint ghost", "▲▼ Choose"));
+      foot.appendChild(btn("hint primary", "Select", function () { openRecipe(s.pick); }));
+
+    } else if (s.screen === "ingredients") {
+      var n = pages();
+      head.appendChild(el("div", "title", r.name));
+      head.appendChild(el("div", "count", n > 1 ? (s.page + 1) + "/" + n : r.ingredients.length + " items"));
+      main.className = "top";
+      r.ingredients.slice(s.page * PER_PAGE, s.page * PER_PAGE + PER_PAGE).forEach(function (it) {
+        var row = el("div", "ing");
+        row.appendChild(el("div", "qty", it[0]));
+        row.appendChild(el("div", "what", it[1]));
+        main.appendChild(row);
+      });
+      foot.appendChild(btn("hint", "◀ Recipes", function () { go("home"); }));
+      if (n > 1) {
+        foot.appendChild(btn("hint",
+          s.page + 1 < n ? "▼ More" : "▲ Up",
+          function () { turnPage(s.page + 1 < n ? 1 : -1); }));
+      }
+      foot.appendChild(btn("hint primary", "Start ▶", startCooking));
+
+    } else if (s.screen === "step") {
+      var st = r.steps[s.step];
+      head.appendChild(el("div", "title", r.name));
+      head.appendChild(el("div", "count", "Step " + (s.step + 1) + "/" + r.steps.length));
+      var bar = el("div", "bar");
+      r.steps.forEach(function (_, i) {
+        bar.appendChild(el("i", i < s.step ? "done" : i === s.step ? "now" : ""));
+      });
+      main.appendChild(el("div", "step", st.text));
+      if (st.timer) {
+        timerNode = btn("timer", "", toggleTimer);
+        main.appendChild(timerNode);
+        paintTimer();
+      }
+      stage.appendChild(head);
+      stage.appendChild(bar);
+      stage.appendChild(main);
+      stage.appendChild(foot);
+      paintFooter();
+      return;
+
+    } else { // done
+      head.appendChild(el("div", "title", r.name));
+      var d = el("div", "done");
+      d.appendChild(el("div", "big", "All done"));
+      d.appendChild(el("div", "sub", "Enjoy your meal."));
+      main.appendChild(d);
+      foot.appendChild(btn("hint", "◀ Last step", function () {
+        loadStep(r.steps.length - 1); s.screen = "step"; render();
+      }));
+      foot.appendChild(btn("hint primary", "Recipes", function () { go("home"); }));
+    }
+
+    stage.appendChild(head);
+    stage.appendChild(main);
+    stage.appendChild(foot);
+  }
+
+  /* ---------- input ----------
+     Wristband swipes arrive as arrow keys and a pinch as Enter.
+     Escape / Backspace go back one level. */
+  function onKey(e) {
+    var k = e.key;
+    var up = k === "ArrowUp", down = k === "ArrowDown";
+    var left = k === "ArrowLeft", right = k === "ArrowRight";
+    var ok = k === "Enter" || k === " " || k === "Spacebar";
+    var back = k === "Escape" || k === "Backspace" || k === "GoBack" || k === "BrowserBack";
+    if (!(up || down || left || right || ok || back)) return;
+
+    if (s.screen === "home") {
+      if (back) return; // let the system handle leaving the app
+      e.preventDefault();
+      if (up) { s.pick = (s.pick + RECIPES.length - 1) % RECIPES.length; render(); }
+      else if (down) { s.pick = (s.pick + 1) % RECIPES.length; render(); }
+      else if (ok || right) openRecipe(s.pick);
+      return;
+    }
+    e.preventDefault();
+    if (s.screen === "ingredients") {
+      if (up) turnPage(-1);
+      else if (down) turnPage(1);
+      else if (ok || right) startCooking();
+      else if (back || left) go("home");
+    } else if (s.screen === "step") {
+      if (ok || right) nextStep();
+      else if (left) prevStep();
+      else if (down || up) toggleTimer();
+      else if (back) go("ingredients");
+    } else {
+      if (ok || right) go("home");
+      else if (left || back) {
+        loadStep(RECIPES[s.recipe].steps.length - 1); s.screen = "step"; render();
+      }
+    }
+  }
+  window.addEventListener("keydown", onKey);
+
+  /* Touch swipes as a fallback when testing on a phone. */
+  var t0 = null;
+  window.addEventListener("touchstart", function (e) {
+    var t = e.changedTouches[0]; t0 = { x: t.clientX, y: t.clientY };
+  }, { passive: true });
+  window.addEventListener("touchend", function (e) {
+    if (!t0) return;
+    var t = e.changedTouches[0], dx = t.clientX - t0.x, dy = t.clientY - t0.y;
+    t0 = null;
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 40) return;
+    var key = Math.abs(dx) > Math.abs(dy)
+      ? (dx < 0 ? "ArrowRight" : "ArrowLeft")
+      : (dy < 0 ? "ArrowDown" : "ArrowUp");
+    onKey({ key: key, preventDefault: function () {} });
+  }, { passive: true });
+
+  /* Fit the 600 px stage to whatever viewport it is opened in. */
+  function fit() {
+    var k = Math.min(window.innerWidth, window.innerHeight) / 600;
+    stage.style.transform = k === 1 ? "" : "scale(" + k + ")";
+  }
+  window.addEventListener("resize", fit);
+
+  fit();
+  render();
+})();
+</script>
+</body>
+</html>

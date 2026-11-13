@@ -50,7 +50,7 @@ The median body text size was 16px, the web default. Across all the apps that lo
 | **[Device profiles](./data)** | Display, input and runtime facts per device: Meta Ray-Ban Display, Even G2, Android XR. Each fact carries its source, the date it was checked, and a grade from `unknown` to `hardware`. |
 | **Lint** | Renders an app headlessly and checks the screenshot against the guidelines. Structural checks run through one adapter per runtime. |
 | **[Agent skills](./skills)** | `hud-design` and `hud-review` for every platform, a short note per platform, and an `AGENTS.md` block. |
-| **Evals** | Tasks scored on the rendered result, with and without the skills. |
+| **[Evals](./evals)** | Tasks scored on the rendered result, with and without the skills. First run: 1 error and 8 warnings without, none with. |
 
 ## Platforms
 

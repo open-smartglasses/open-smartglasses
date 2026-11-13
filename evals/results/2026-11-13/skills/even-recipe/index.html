@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipes</title>
+<style>
+  html { background: #000; color: #e6e6e6; font: 400 1.125rem/1.5 system-ui, sans-serif; }
+  body { margin: 0; padding: 1.5rem; }
+  h1 { font-size: 1.5rem; font-weight: 600; margin: 0 0 0.5rem; }
+  p { margin: 0 0 0.5rem; }
+</style>
+</head>
+<body>
+<h1>Recipes</h1>
+<p id="status">Connecting to glasses</p>
+<p>Swipe to move. Press to choose or go on. Double press to go back.</p>
+
+<script type="module">
+import {
+  waitForEvenAppBridge,
+  OsEventTypeList,
+} from 'https://cdn.jsdelivr.net/npm/@evenrealities/even_hub_sdk@0.0.16/dist/index.js';
+
+// Sample data.
+const RECIPES = [
+  {
+    name: 'Tomato pasta',
+    ingredients: [
+      '200 g spaghetti',
+      '400 g chopped tomatoes',
+      '2 garlic cloves',
+      '2 tbsp olive oil',
+      'Basil, salt',
+    ],
+    steps: [
+      'Boil salted water. Cook the spaghetti 9 minutes.',
+      'Slice the garlic. Fry it in the oil for 1 minute.',
+      'Add the tomatoes. Simmer 8 minutes.',
+      'Drain the pasta and toss it in the sauce.',
+      'Tear basil over the top and serve.',
+    ],
+  },
+  {
+    name: 'Fried rice',
+    ingredients: [
+      '2 cups cooked rice, cold',
+      '2 eggs',
+      '1 spring onion',
+      '1 tbsp soy sauce',
+      '1 tbsp oil',
+    ],
+    steps: [
+      'Heat the oil in a pan on high.',
+      'Scramble the eggs, then push them aside.',
+      'Add the rice. Stir-fry 3 minutes.',
+      'Add soy sauce and sliced spring onion.',
+      'Stir 1 minute more and serve.',
+    ],
+  },
+  {
+    name: 'Pancakes',
+    ingredients: [
+      '150 g flour',
+      '1 egg',
+      '250 ml milk',
+      '1 tbsp sugar',
+      'Butter for the pan',
+    ],
+    steps: [
+      'Whisk flour, sugar, egg and milk until smooth.',
+      'Melt a little butter in a pan on medium.',
+      'Pour in one ladle of batter.',
+      'Flip when bubbles show. Cook 1 minute more.',
+      'Repeat with the rest of the batter.',
+    ],
+  },
+];
+
+const W = 576;
+const H = 288;
+const HEAD_H = 44;
+
+const HEAD = { id: 1, name: 'head' };
+const BODY = { id: 2, name: 'body' };
+const LIST = { id: 3, name: 'recipes' };
+
+const state = { screen: 'list', recipe: 0, step: 0 };
+let bridge;
+let started = false;
+let busy = false;
+
+function headText(content) {
+  return {
+    xPosition: 0, yPosition: 0, width: W, height: HEAD_H,
+    containerID: HEAD.id, containerName: HEAD.name,
+    content, isEventCapture: 0,
+  };
+}
+
+function bodyText(content) {
+  return {
+    xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H,
+    containerID: BODY.id, containerName: BODY.name,
+    content, isEventCapture: 1,
+  };
+}
+
+function stepHead() {
+  const r = RECIPES[state.recipe];
+  return `Step ${state.step + 1}/${r.steps.length}`;
+}
+
+function page() {
+  const r = RECIPES[state.recipe];
+  if (state.screen === 'list') {
+    return {
+      containerTotalNum: 2,
+      textObject: [headText('Recipes')],
+      listObject: [{
+        xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H,
+        containerID: LIST.id, containerName: LIST.name,
+        itemContainer: {
+          itemCount: RECIPES.length,
+          itemName: RECIPES.map((x) => x.name),
+        },
+        isEventCapture: 1,
+      }],
+    };
+  }
+  if (state.screen === 'ingredients') {
+    return {
+      containerTotalNum: 2,
+      textObject: [headText(r.name), bodyText(r.ingredients.join('\n'))],
+    };
+  }
+  return {
+    containerTotalNum: 2,
+    textObject: [headText(stepHead()), bodyText(r.steps[state.step])],
+  };
+}
+
+async function show() {
+  if (!started) {
+    await bridge.createStartUpPageContainer(page());
+    started = true;
+  } else {
+    await bridge.rebuildPageContainer(page());
+  }
+}
+
+// Moving between steps keeps the same page, so only the text changes.
+async function showStep() {
+  const r = RECIPES[state.recipe];
+  await bridge.textContainerUpgrade({
+    containerID: HEAD.id, containerName: HEAD.name, content: stepHead(),
+  });
+  await bridge.textContainerUpgrade({
+    containerID: BODY.id, containerName: BODY.name, content: r.steps[state.step],
+  });
+}
+
+async function go(screen) {
+  state.screen = screen;
+  await show();
+}
+
+async function nextStep() {
+  const r = RECIPES[state.recipe];
+  if (state.step < r.steps.length - 1) {
+    state.step += 1;
+    await showStep();
+  } else {
+    await go('list');
+  }
+}
+
+async function prevStep() {
+  if (state.step > 0) {
+    state.step -= 1;
+    await showStep();
+  } else {
+    await go('ingredients');
+  }
+}
+
+// A press arrives with eventType 0, which the host may leave out.
+function kind(ev) {
+  const t = ev.eventType;
+  if (t === undefined || t === null || t === OsEventTypeList.CLICK_EVENT) return 'press';
+  if (t === OsEventTypeList.DOUBLE_CLICK_EVENT) return 'back';
+  if (t === OsEventTypeList.SCROLL_TOP_EVENT) return 'up';
+  if (t === OsEventTypeList.SCROLL_BOTTOM_EVENT) return 'down';
+  return '';
+}
+
+async function handle(event) {
+  const ev = event.listEvent || event.textEvent || event.sysEvent;
+  if (!ev) return;
+  const k = kind(ev);
+  if (!k) return;
+
+  if (state.screen === 'list') {
+    if (k === 'press' && event.listEvent) {
+      let i = event.listEvent.currentSelectItemIndex;
+      if (typeof i !== 'number') {
+        i = RECIPES.findIndex((x) => x.name === event.listEvent.currentSelectItemName);
+      }
+      state.recipe = i >= 0 && i < RECIPES.length ? i : 0;
+      state.step = 0;
+      await go('ingredients');
+    } else if (k === 'back') {
+      await bridge.shutDownPageContainer(1);
+    }
+    return;
+  }
+
+  if (state.screen === 'ingredients') {
+    if (k === 'press') {
+      state.step = 0;
+      await go('steps');
+    } else if (k === 'back') {
+      await go('list');
+    }
+    return;
+  }
+
+  if (k === 'press' || k === 'down') await nextStep();
+  else if (k === 'up') await prevStep();
+  else if (k === 'back') await go('ingredients');
+}
+
+const status = document.getElementById('status');
+
+try {
+  bridge = await waitForEvenAppBridge();
+  await show();
+  status.textContent = 'Showing on glasses';
+  bridge.onEvenHubEvent(async (event) => {
+    if (busy) return;
+    busy = true;
+    try {
+      await handle(event);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      busy = false;
+    }
+  });
+} catch (err) {
+  console.error(err);
+  status.textContent = 'Open this page in the Even app';
+}
+</script>
+</body>
+</html>

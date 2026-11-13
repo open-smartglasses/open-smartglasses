@@ -1,0 +1,5 @@
+{
+  "id": "mrbd-departures",
+  "device": "mrbd",
+  "prompt": "Build a web app for Meta Ray-Ban Display glasses that shows the next departures from a train station. Show at least six upcoming departures with line, destination, platform and minutes until departure. Selecting a departure opens a detail screen with its stops. Deliver one self-contained file, index.html, with HTML, CSS and JavaScript inline. Use sample data written into the file. No build step, no network requests."
+}

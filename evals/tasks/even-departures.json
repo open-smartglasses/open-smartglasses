@@ -1,0 +1,5 @@
+{
+  "id": "even-departures",
+  "device": "even-g2",
+  "prompt": "Build an Even Hub app for Even Realities G2 glasses that shows the next departures from a train station. Show at least six upcoming departures with line, destination, platform and minutes until departure. Selecting a departure shows its stops. Deliver one file, index.html, with JavaScript inline in a module script. Import the SDK from https://cdn.jsdelivr.net/npm/@evenrealities/even_hub_sdk@0.0.16/dist/index.js. Use sample data written into the file. No build step. The SDK's README is provided as reference."
+}

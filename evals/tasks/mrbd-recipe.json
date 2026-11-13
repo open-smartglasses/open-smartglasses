@@ -1,0 +1,5 @@
+{
+  "id": "mrbd-recipe",
+  "device": "mrbd",
+  "prompt": "Build a web app for Meta Ray-Ban Display glasses that walks a cook through a recipe. It offers three recipes to choose from, shows the ingredients of the chosen one, and then the steps one after another. Deliver one self-contained file, index.html, with HTML, CSS and JavaScript inline. Use sample data written into the file. No build step, no network requests."
+}

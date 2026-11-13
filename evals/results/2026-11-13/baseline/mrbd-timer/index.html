@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=600, height=600, initial-scale=1, user-scalable=no">
+<title>Focus Timer</title>
+<style>
+  /* Meta Ray-Ban Display: 600x600 additive display. Black is transparent,
+     so the page stays black and uses bright strokes and text, few filled areas. */
+  :root {
+    --work: #5dff9b;
+    --break: #5fd4ff;
+    --accent: var(--work);
+    --text: #ffffff;
+    --dim: #9aa3ad;
+    --line: #3a4048;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #000; color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+    -webkit-user-select: none; user-select: none;
+  }
+  body { display: flex; align-items: center; justify-content: center; }
+  body.break { --accent: var(--break); }
+
+  #app {
+    width: 600px; height: 600px;
+    padding: 28px 36px 32px;
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .phase {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 34px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--accent);
+    height: 44px;
+  }
+  .dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent);
+  }
+  .running .dot { animation: pulse 1.6s ease-in-out infinite; }
+  .paused .dot, .idle .dot { background: none; border: 3px solid var(--accent); }
+  @keyframes pulse { 50% { opacity: .25; } }
+
+  .dial { position: relative; width: 310px; height: 310px; margin-top: 12px; }
+  .dial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .track { fill: none; stroke: var(--line); stroke-width: 8; }
+  .arc {
+    fill: none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round;
+    transition: stroke-dashoffset .3s linear;
+  }
+  .readout {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .time {
+    font-size: 96px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums; letter-spacing: -1px;
+  }
+  .state { margin-top: 10px; font-size: 26px; color: var(--dim); height: 32px; }
+
+  .rounds {
+    margin-top: 14px; height: 40px;
+    display: flex; align-items: center; gap: 16px;
+    font-size: 28px;
+  }
+  .rounds b { color: var(--accent); font-weight: 700; }
+  .pips { display: flex; gap: 8px; }
+  .pip { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--dim); }
+  .pip.on { background: var(--accent); border-color: var(--accent); }
+
+  .controls { margin-top: auto; display: flex; gap: 20px; width: 100%; }
+  button {
+    flex: 1; height: 84px;
+    font: inherit; font-size: 32px; font-weight: 700;
+    color: var(--text); background: #000;
+    border: 3px solid var(--line); border-radius: 42px;
+    outline: none; cursor: pointer;
+  }
+  button:focus {
+    border-color: var(--accent); color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent);
+  }
+  button:active { transform: scale(.97); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .running .dot { animation: none; }
+    .arc { transition: none; }
+  }
+</style>
+</head>
+<body class="idle">
+<main id="app">
+  <div class="phase"><span class="dot"></span><span id="phase">Work</span></div>
+
+  <div class="dial">
+    <svg viewBox="0 0 310 310" aria-hidden="true">
+      <circle class="track" cx="155" cy="155" r="143"></circle>
+      <circle class="arc" id="arc" cx="155" cy="155" r="143"></circle>
+    </svg>
+    <div class="readout">
+      <div class="time" id="time" role="timer" aria-live="off">25:00</div>
+      <div class="state" id="state">Ready</div>
+    </div>
+  </div>
+
+  <div class="rounds" aria-live="polite">
+    <span><b id="count">0</b> <span id="countLabel">rounds today</span></span>
+    <span class="pips" id="pips"></span>
+  </div>
+
+  <div class="controls">
+    <button id="toggle" type="button">Start</button>
+    <button id="reset" type="button">Reset</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- Sample data (inline, no network, no storage) ----
+  var SAMPLE = {
+    workMinutes: 25,
+    breakMinutes: 5,
+    dailyGoal: 8,
+    roundsDoneToday: 3
+  };
+
+  var DUR = { work: SAMPLE.workMinutes * 60000, break: SAMPLE.breakMinutes * 60000 };
+  var LABEL = { work: 'Work', break: 'Break' };
+  var CIRC = 2 * Math.PI * 143;
+
+  var phase = 'work';
+  var running = false;
+  var remaining = DUR.work;   // ms left in the current phase
+  var endAt = 0;              // wall-clock end of the phase while running
+  var rounds = SAMPLE.roundsDoneToday;
+  var started = false;        // has this phase been started at least once
+  var ticker = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var elPhase = $('phase'), elTime = $('time'), elState = $('state'),
+      elArc = $('arc'), elCount = $('count'), elCountLabel = $('countLabel'),
+      elPips = $('pips'), btnToggle = $('toggle'), btnReset = $('reset');
+
+  elArc.style.strokeDasharray = CIRC;
+
+  function fmt(ms) {
+    var s = Math.max(0, Math.ceil(ms / 1000));
+    var m = Math.floor(s / 60);
+    s = s % 60;
+    return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function renderRounds() {
+    elCount.textContent = rounds;
+    elCountLabel.textContent = rounds === 1 ? 'round today' : 'rounds today';
+    var html = '';
+    for (var i = 0; i < SAMPLE.dailyGoal; i++) {
+      html += '<span class="pip' + (i < rounds ? ' on' : '') + '"></span>';
+    }
+    elPips.innerHTML = html;
+  }
+
+  function render() {
+    var text = fmt(remaining);
+    if (elTime.textContent !== text) elTime.textContent = text;
+    elArc.style.strokeDashoffset = CIRC * (1 - remaining / DUR[phase]);
+    elPhase.textContent = LABEL[phase];
+    elState.textContent = running ? 'Running' : (started ? 'Paused' : 'Ready');
+    btnToggle.textContent = running ? 'Pause' : (started ? 'Resume' : 'Start');
+    document.body.className =
+      (phase === 'break' ? 'break ' : '') + (running ? 'running' : (started ? 'paused' : 'idle'));
+    document.title = text + ' ' + LABEL[phase];
+  }
+
+  function nextPhase() {
+    if (phase === 'work') {
+      rounds++;
+      renderRounds();
+      phase = 'break';
+    } else {
+      phase = 'work';
+    }
+  }
+
+  function tick() {
+    if (!running) return;
+    var now = Date.now();
+    // Catch up through any phases that ended while the page was asleep.
+    while (now >= endAt) {
+      nextPhase();
+      endAt += DUR[phase];
+    }
+    remaining = endAt - now;
+    render();
+  }
+
+  function start() {
+    if (running) return;
+    running = true;
+    started = true;
+    endAt = Date.now() + remaining;
+    ticker = setInterval(tick, 200);
+    render();
+  }
+
+  function pause() {
+    if (!running) return;
+    tick();
+    running = false;
+    clearInterval(ticker);
+    ticker = null;
+    render();
+  }
+
+  function reset() {
+    running = false;
+    clearInterval(ticker);
+    ticker = null;
+    phase = 'work';
+    remaining = DUR.work;
+    started = false;
+    render();
+  }
+
+  function toggle() { running ? pause() : start(); }
+
+  btnToggle.addEventListener('click', toggle);
+  btnReset.addEventListener('click', reset);
+
+  // Swipes arrive as arrow keys and pinch as Enter: move focus between the
+  // two buttons with arrows; Enter/Space activate the focused button natively.
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowLeft' || k === 'ArrowUp') {
+      btnToggle.focus(); e.preventDefault();
+    } else if (k === 'ArrowRight' || k === 'ArrowDown') {
+      btnReset.focus(); e.preventDefault();
+    } else if ((k === 'Enter' || k === ' ') && document.activeElement !== btnToggle &&
+               document.activeElement !== btnReset) {
+      btnToggle.focus(); toggle(); e.preventDefault();
+    }
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) tick();
+  });
+
+  renderRounds();
+  render();
+  btnToggle.focus();
+})();
+</script>
+</body>
+</html>

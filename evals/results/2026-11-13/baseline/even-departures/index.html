@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departures</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; padding: 16px; background: #0b0f0c; color: #d7f5dc;
+         font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 18px; margin: 0 0 2px; }
+  #status { color: #7fa888; font-size: 13px; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #1d2a20; }
+  th { color: #7fa888; font-weight: 500; font-size: 12px; }
+  td.min, th.min { text-align: right; white-space: nowrap; }
+  tbody tr { cursor: pointer; }
+  tbody tr:active { background: #142018; }
+  #detail { display: none; }
+  #detail pre { font: inherit; white-space: pre-wrap; margin: 12px 0; }
+  button { background: #1d2a20; color: inherit; border: 1px solid #2f4535;
+           border-radius: 6px; padding: 8px 14px; font: inherit; }
+</style>
+</head>
+<body>
+  <h1 id="title"></h1>
+  <div id="status">Connecting to glasses…</div>
+  <div id="board">
+    <table>
+      <thead><tr><th>Line</th><th>Destination</th><th>Pl.</th><th class="min">Min</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+  <div id="detail">
+    <pre id="detailText"></pre>
+    <button id="back">Back</button>
+  </div>
+
+<script type="module">
+import {
+  waitForEvenAppBridge,
+  OsEventTypeList,
+  StartUpPageCreateResult,
+} from 'https://cdn.jsdelivr.net/npm/@evenrealities/even_hub_sdk@0.0.16/dist/index.js';
+
+// ---------------------------------------------------------------- sample data
+// `offset` = minutes after page load for the first run; `every` = repeat
+// interval, so the board never runs dry. Stop `t` = minutes after departure.
+const STATION = 'Köln Hbf';
+const SAMPLE = [
+  { line: 'S 11', dest: 'Bergisch Gladbach', platform: '11', offset: 2, every: 20, stops: [
+    ['Köln Messe/Deutz', 3], ['Köln-Buchforst', 6], ['Köln-Mülheim', 9], ['Köln-Holweide', 12],
+    ['Köln-Dellbrück', 15], ['Duckterath', 18], ['Bergisch Gladbach', 22]] },
+  { line: 'RE 5', dest: 'Koblenz Hbf', platform: '4', offset: 5, every: 60, stops: [
+    ['Köln Süd', 4], ['Brühl', 12], ['Bonn Hbf', 24], ['Bonn-Bad Godesberg', 31],
+    ['Remagen', 42], ['Andernach', 58], ['Koblenz Stadtmitte', 70], ['Koblenz Hbf', 73]] },
+  { line: 'ICE 517', dest: 'München Hbf', platform: '6', offset: 9, every: 120, stops: [
+    ['Siegburg/Bonn', 14], ['Frankfurt Flughafen', 52], ['Mannheim Hbf', 84],
+    ['Stuttgart Hbf', 125], ['Ulm Hbf', 172], ['Augsburg Hbf', 215], ['München Hbf', 248]] },
+  { line: 'RB 26', dest: 'Mainz Hbf', platform: '8', offset: 13, every: 60, stops: [
+    ['Köln West', 4], ['Köln Süd', 7], ['Bonn Hbf', 30], ['Remagen', 50], ['Koblenz Hbf', 88],
+    ['Boppard Hbf', 104], ['Bingen Hbf', 138], ['Mainz Hbf', 166]] },
+  { line: 'S 6', dest: 'Essen Hbf', platform: '10', offset: 16, every: 20, stops: [
+    ['Köln Messe/Deutz', 3], ['Leverkusen Mitte', 14], ['Langenfeld', 23], ['Düsseldorf-Benrath', 32],
+    ['Düsseldorf Hbf', 41], ['Ratingen Ost', 53], ['Essen-Werden', 73], ['Essen Hbf', 84]] },
+  { line: 'RE 1', dest: 'Hamm (Westf)', platform: '3', offset: 21, every: 60, stops: [
+    ['Köln Messe/Deutz', 3], ['Leverkusen Mitte', 13], ['Düsseldorf Hbf', 28], ['Duisburg Hbf', 44],
+    ['Essen Hbf', 57], ['Bochum Hbf', 68], ['Dortmund Hbf', 81], ['Hamm (Westf)', 102]] },
+  { line: 'IC 2012', dest: 'Dortmund Hbf', platform: '5', offset: 27, every: 120, stops: [
+    ['Düsseldorf Hbf', 22], ['Duisburg Hbf', 36], ['Essen Hbf', 49], ['Bochum Hbf', 60],
+    ['Dortmund Hbf', 72]] },
+  { line: 'RE 9', dest: 'Siegen Hbf', platform: '9', offset: 33, every: 60, stops: [
+    ['Köln Messe/Deutz', 3], ['Troisdorf', 17], ['Siegburg/Bonn', 21], ['Hennef (Sieg)', 26],
+    ['Eitorf', 37], ['Au (Sieg)', 53], ['Betzdorf (Sieg)', 71], ['Siegen Hbf', 91]] },
+  { line: 'S 19', dest: 'Düren', platform: '11', offset: 38, every: 30, stops: [
+    ['Köln Hansaring', 2], ['Köln-Ehrenfeld', 6], ['Frechen-Königsdorf', 15], ['Horrem', 19],
+    ['Sindorf', 23], ['Buir', 29], ['Merzenich', 34], ['Düren', 39]] },
+  { line: 'ICE 14', dest: 'Bruxelles-Midi', platform: '7', offset: 46, every: 120, stops: [
+    ['Aachen Hbf', 36], ['Liège-Guillemins', 62], ['Bruxelles-Nord', 104], ['Bruxelles-Midi', 112]] },
+];
+
+const MIN = 60_000;
+const t0 = Date.now();
+const departures = SAMPLE.map((d, i) => ({ ...d, id: i, time: t0 + d.offset * MIN }));
+
+const hhmm = (ms) => {
+  const d = new Date(ms);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+};
+const minsUntil = (ms) => Math.max(0, Math.ceil((ms - Date.now()) / MIN));
+const minLabel = (ms) => { const m = minsUntil(ms); return m === 0 ? 'now' : m + ' min'; };
+
+/** Roll departed trains forward to their next run and return the board, soonest first. */
+function upcoming() {
+  const now = Date.now();
+  for (const d of departures) {
+    if (d === selected) continue;            // keep the one being viewed stable
+    while (d.time <= now - 30_000) d.time += d.every * MIN;
+  }
+  return [...departures].sort((a, b) => a.time - b.time);
+}
+
+const rowText = (d) => `${d.line} > ${d.dest}  |  Pl ${d.platform}  |  ${minLabel(d.time)}`;
+const headerText = () => `${STATION} departures   ${hhmm(Date.now())}`;
+
+function detailText(d) {
+  const gone = d.time <= Date.now() - 30_000;
+  const lines = [
+    `${d.line} to ${d.dest}`,
+    `Platform ${d.platform}  |  ${hhmm(d.time)}  |  ${gone ? 'departed' : minLabel(d.time)}`,
+    '',
+    ...d.stops.map(([name, t]) => `${hhmm(d.time + t * MIN)}  ${name}`),
+  ];
+  return lines.join('\n');
+}
+
+// ------------------------------------------------------------------ app state
+let bridge = null;
+let started = false;      // startup page created
+let view = 'list';        // 'list' | 'detail'
+let selected = null;      // departure shown in detail
+let shown = [];           // departures in the order currently on the glasses list
+let lastListKey = '';
+let lastDetail = '';
+let lastHeader = '';
+let queue = Promise.resolve();
+
+/** Serialise all glasses calls so rebuilds never overlap. */
+const enqueue = (fn) => (queue = queue.then(fn).catch((e) => console.error('[departures]', e)));
+
+// --------------------------------------------------------------- glasses pages
+// G2 canvas: 576 x 288, origin top-left.
+const W = 576, H = 288, HEAD_H = 40;
+
+function listPage() {
+  shown = upcoming();
+  const names = shown.map(rowText);
+  lastListKey = names.join('\n');
+  lastHeader = headerText();
+  return {
+    containerTotalNum: 2,
+    textObject: [{
+      xPosition: 0, yPosition: 0, width: W, height: HEAD_H,
+      containerID: 1, containerName: 'header', zOrderIndex: 1,
+      content: lastHeader, isEventCapture: 0,
+    }],
+    listObject: [{
+      xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H,
+      containerID: 2, containerName: 'departures', zOrderIndex: 2,
+      itemContainer: {
+        itemCount: names.length,
+        itemWidth: W - 8,
+        isItemSelectBorderEn: 1,
+        itemName: names,
+      },
+      isEventCapture: 1,
+    }],
+  };
+}
+
+function detailPage() {
+  lastDetail = detailText(selected);
+  return {
+    containerTotalNum: 1,
+    textObject: [{
+      xPosition: 0, yPosition: 0, width: W, height: H,
+      containerID: 3, containerName: 'stops', zOrderIndex: 1,
+      paddingLength: 4,
+      content: lastDetail, isEventCapture: 1,
+    }],
+  };
+}
+
+async function showPage(page) {
+  if (!bridge) return;
+  if (!started) {
+    const result = await bridge.createStartUpPageContainer(page);
+    started = result === StartUpPageCreateResult.success || result === 0;
+    setStatus(started ? 'Showing on glasses. Tap a row to see its stops.'
+                      : 'Could not start the glasses page (' + result + ').');
+  } else {
+    await bridge.rebuildPageContainer(page);
+  }
+}
+
+function openList() {
+  view = 'list';
+  selected = null;
+  renderPhone();
+  enqueue(() => showPage(listPage()));
+}
+
+function openDetail(d) {
+  if (!d) return;
+  view = 'detail';
+  selected = d;
+  renderPhone();
+  enqueue(() => showPage(detailPage()));
+}
+
+/** Periodic refresh: only touch the glasses when visible text actually changed. */
+function tick() {
+  renderPhone();
+  if (!bridge || !started) return;
+  enqueue(async () => {
+    if (view === 'list') {
+      const next = upcoming();
+      const key = next.map(rowText).join('\n');
+      if (key !== lastListKey) {
+        await bridge.rebuildPageContainer(listPage());
+      } else if (headerText() !== lastHeader) {
+        lastHeader = headerText();
+        await bridge.textContainerUpgrade({ containerID: 1, containerName: 'header', content: lastHeader });
+      }
+    } else if (selected) {
+      const text = detailText(selected);
+      if (text !== lastDetail) {
+        lastDetail = text;
+        await bridge.textContainerUpgrade({ containerID: 3, containerName: 'stops', content: text });
+      }
+    }
+  });
+}
+
+// --------------------------------------------------------------------- events
+const CLICK = OsEventTypeList?.CLICK_EVENT ?? 0;
+const DOUBLE_CLICK = OsEventTypeList?.DOUBLE_CLICK_EVENT ?? 3;
+
+/** A click arrives with eventType omitted (protobuf default 0), so undefined means click. */
+function kind(ev) {
+  const t = ev?.eventType;
+  if (t === undefined || t === null || t === CLICK || t === 'CLICK_EVENT') return 'click';
+  if (t === DOUBLE_CLICK || t === 'DOUBLE_CLICK_EVENT') return 'double';
+  return 'other';
+}
+
+function onHubEvent(event) {
+  if (event.audioEvent) return;
+  const { listEvent, textEvent, sysEvent } = event;
+
+  if (view === 'list') {
+    if (listEvent) {
+      const k = kind(listEvent);
+      if (k === 'click') {
+        // Index 0 is also omitted on the wire; fall back to the item name, then to 0.
+        let i = listEvent.currentSelectItemIndex;
+        if (typeof i !== 'number') {
+          const name = listEvent.currentSelectItemName;
+          i = name ? shown.findIndex((d) => rowText(d) === name || name.startsWith(d.line + ' >')) : 0;
+          if (i < 0) i = 0;
+        }
+        openDetail(shown[i]);
+      } else if (k === 'double') {
+        exitApp();
+      }
+    } else if (sysEvent && kind(sysEvent) === 'double') {
+      exitApp();
+    }
+    return;
+  }
+
+  // Detail view: tap or double tap goes back to the board; swipes scroll the text.
+  const ev = textEvent ?? sysEvent;
+  if (ev && kind(ev) !== 'other') openList();
+}
+
+function exitApp() {
+  enqueue(() => bridge.shutDownPageContainer(1));
+}
+
+// ----------------------------------------------------------- phone-side mirror
+const $ = (id) => document.getElementById(id);
+const setStatus = (s) => { $('status').textContent = s; };
+
+function renderPhone() {
+  $('title').textContent = `${STATION} departures`;
+  const inDetail = view === 'detail' && selected;
+  $('board').style.display = inDetail ? 'none' : '';
+  $('detail').style.display = inDetail ? 'block' : 'none';
+  if (inDetail) {
+    $('detailText').textContent = detailText(selected);
+    return;
+  }
+  const tbody = $('rows');
+  tbody.textContent = '';
+  for (const d of upcoming()) {
+    const tr = document.createElement('tr');
+    for (const [text, cls] of [[d.line], [d.dest], [d.platform], [minLabel(d.time), 'min']]) {
+      const td = document.createElement('td');
+      td.textContent = text;
+      if (cls) td.className = cls;
+      tr.appendChild(td);
+    }
+    tr.addEventListener('click', () => openDetail(d));
+    tbody.appendChild(tr);
+  }
+}
+
+$('back').addEventListener('click', openList);
+
+// ----------------------------------------------------------------------- boot
+renderPhone();
+setInterval(tick, 10_000);
+
+try {
+  bridge = await waitForEvenAppBridge();
+  bridge.onEvenHubEvent(onHubEvent);
+  enqueue(() => showPage(view === 'detail' && selected ? detailPage() : listPage()));
+} catch (e) {
+  console.error('[departures] bridge unavailable', e);
+  setStatus('Even App bridge not available. Open this page inside the Even App.');
+}
+</script>
+</body>
+</html>

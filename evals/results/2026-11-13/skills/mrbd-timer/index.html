@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus Timer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: #000;            /* black is transparent on an additive display */
+    color: #fff;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.25;
+  }
+
+  main {
+    min-height: 100vh;
+    max-width: 100%;
+    padding: 4vmin;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3vmin;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* The phase mark changes shape as well as the word: filled for work, hollow for break. */
+  .mark {
+    display: inline-block;
+    width: 0.6em;
+    height: 0.6em;
+    margin-right: 0.35em;
+    border: 0.12em solid #fff;
+    border-radius: 50%;
+    background: #fff;
+    vertical-align: 0.02em;
+  }
+  [data-phase="break"] .mark { background: transparent; }
+
+  .time {
+    margin: 0;
+    font-size: clamp(72px, 24vmin, 168px);
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .status, .rounds {
+    margin: 0;
+    font-size: 30px;
+    font-weight: 500;
+    color: #d0d0d0;
+  }
+  .rounds strong { color: #fff; font-weight: 700; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4vmin;
+    margin-top: 1vmin;
+  }
+
+  button {
+    font: inherit;
+    font-size: 32px;
+    font-weight: 600;
+    color: #d0d0d0;
+    background: transparent;
+    border: 2px solid #8a8a8a;
+    border-radius: 0.5em;
+    padding: 0.35em 0.9em;
+    min-width: 5.5em;
+  }
+
+  /* Focus: thicker, brighter outline plus heavier text, so it does not rest on color. */
+  button:focus,
+  button:focus-visible {
+    color: #fff;
+    font-weight: 800;
+    border-color: #fff;
+    outline: 5px solid #fff;
+    outline-offset: 4px;
+  }
+</style>
+</head>
+<body>
+<main id="app" data-phase="work">
+  <h1><span class="mark" aria-hidden="true"></span><span id="phase">Work</span></h1>
+  <p class="time" id="time" role="timer" aria-label="Time left">25:00</p>
+  <p class="status" id="status" aria-live="polite">Ready</p>
+  <p class="rounds">Rounds today <strong id="rounds">0</strong></p>
+  <div class="controls">
+    <button type="button" id="toggle" aria-label="Start timer" autofocus>Start</button>
+    <button type="button" id="reset" aria-label="Reset timer">Reset</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // Sample data, written into the file. Nothing is loaded or saved.
+  var SAMPLE = {
+    workMinutes: 25,
+    breakMinutes: 5,
+    roundsToday: 3
+  };
+
+  var PHASES = {
+    work:  { label: "Work",  ms: SAMPLE.workMinutes * 60000 },
+    break: { label: "Break", ms: SAMPLE.breakMinutes * 60000 }
+  };
+
+  var state = {
+    phase: "work",
+    remaining: PHASES.work.ms,   // ms left in the current phase
+    running: false,
+    started: false,              // false until the phase has been started once
+    endsAt: 0,                   // wall-clock deadline while running
+    rounds: SAMPLE.roundsToday
+  };
+
+  var app = document.getElementById("app");
+  var phaseEl = document.getElementById("phase");
+  var timeEl = document.getElementById("time");
+  var statusEl = document.getElementById("status");
+  var roundsEl = document.getElementById("rounds");
+  var toggleBtn = document.getElementById("toggle");
+  var resetBtn = document.getElementById("reset");
+  var ticker = null;
+
+  function two(n) { return (n < 10 ? "0" : "") + n; }
+
+  function render() {
+    var secs = Math.ceil(state.remaining / 1000);
+    var text = two(Math.floor(secs / 60)) + ":" + two(secs % 60);
+    if (timeEl.textContent !== text) timeEl.textContent = text;
+
+    app.setAttribute("data-phase", state.phase);
+    phaseEl.textContent = PHASES[state.phase].label;
+    roundsEl.textContent = String(state.rounds);
+
+    var status = state.running ? "Running" : (state.started ? "Paused" : "Ready");
+    if (statusEl.textContent !== status) statusEl.textContent = status;
+
+    var action = state.running ? "Pause" : (state.started ? "Resume" : "Start");
+    if (toggleBtn.textContent !== action) {
+      toggleBtn.textContent = action;
+      toggleBtn.setAttribute("aria-label", action + " timer");
+    }
+  }
+
+  function nextPhase() {
+    if (state.phase === "work") {
+      state.rounds += 1;         // a round is one finished work phase
+      state.phase = "break";
+    } else {
+      state.phase = "work";
+    }
+    state.remaining = PHASES[state.phase].ms;
+    state.endsAt = Date.now() + state.remaining;
+  }
+
+  function tick() {
+    if (!state.running) return;
+    state.remaining = state.endsAt - Date.now();
+    // Catch up through every phase that ended, e.g. after the page was suspended.
+    while (state.remaining <= 0) {
+      var overshoot = -state.remaining;
+      nextPhase();
+      state.endsAt -= overshoot;
+      state.remaining = state.endsAt - Date.now();
+    }
+    render();
+  }
+
+  function start() {
+    state.running = true;
+    state.started = true;
+    state.endsAt = Date.now() + state.remaining;
+    if (!ticker) ticker = setInterval(tick, 250);
+    render();
+  }
+
+  function pause() {
+    state.remaining = Math.max(0, state.endsAt - Date.now());
+    state.running = false;
+    if (ticker) { clearInterval(ticker); ticker = null; }
+    render();
+  }
+
+  // Reset returns to a full work phase. Rounds done today are kept.
+  function reset() {
+    state.running = false;
+    state.started = false;
+    if (ticker) { clearInterval(ticker); ticker = null; }
+    state.phase = "work";
+    state.remaining = PHASES.work.ms;
+    render();
+    toggleBtn.focus();
+  }
+
+  toggleBtn.addEventListener("click", function () {
+    if (state.running) pause(); else start();
+  });
+  resetBtn.addEventListener("click", reset);
+  document.addEventListener("visibilitychange", tick);
+
+  render();
+  toggleBtn.focus();
+})();
+</script>
+</body>
+</html>

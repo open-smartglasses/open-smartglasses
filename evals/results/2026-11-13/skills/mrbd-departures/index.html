@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departures</title>
+<style>
+  :root {
+    --hi: #ffffff;
+    --mid: #c4c4c4;
+    --low: #6e6e6e;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 100%; background: #000; }
+  body {
+    margin: 0;
+    padding: 0.375rem 0.75rem 0.5rem;
+    background: #000;
+    color: var(--hi);
+    font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 500;
+    font-size: 1.8125rem; /* 29px */
+    line-height: 1.2;
+    overflow-x: hidden;
+  }
+  [hidden] { display: none !important; }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0 0 0.5rem;
+  }
+  h1 {
+    margin: 0;
+    font-size: 1.8125rem; /* 29px */
+    font-weight: 700;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .tag {
+    font-size: 1.625rem; /* 26px */
+    color: var(--mid);
+    white-space: nowrap;
+  }
+
+  ul, ol { list-style: none; margin: 0; padding: 0; }
+
+  /* Departure list */
+  #list li + li { margin-top: 0.25rem; }
+  .dep {
+    display: grid;
+    grid-template-columns: 5.25rem minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: 0.1875rem 0.625rem;
+    background: #000;
+    color: var(--hi);
+    border: 0.125rem solid var(--low);
+    border-radius: 0.75rem;
+    font: inherit;
+    text-align: left;
+    cursor: default;
+  }
+  .dep:focus { outline: none; }
+  .dep:focus,
+  .dep:focus-visible {
+    border-color: var(--hi);
+    outline: 0.25rem solid var(--hi);
+    outline-offset: -0.125rem;
+  }
+  .dep:focus .dest { font-weight: 700; }
+  .line {
+    grid-row: 1 / span 2;
+    font-size: 1.8125rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 0.25rem 0.125rem;
+    border: 0.125rem solid var(--mid);
+    border-radius: 0.5rem;
+  }
+  .dest {
+    grid-column: 2;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .sub {
+    grid-column: 2;
+    font-size: 1.625rem;
+    color: var(--mid);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .mins {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+    font-size: 2.125rem; /* 34px */
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .mins small {
+    font-size: 1.625rem;
+    font-weight: 500;
+    color: var(--mid);
+  }
+
+  /* Detail */
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    margin: 0 0 0.625rem;
+    font-size: 1.8125rem;
+  }
+  .facts b { font-weight: 700; }
+  .stops li {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr) auto;
+    column-gap: 0.75rem;
+    align-items: center;
+    padding: 0.3125rem 0;
+    border-top: 0.0625rem solid var(--low);
+  }
+  .stops .dot {
+    width: 0.875rem;
+    height: 0.875rem;
+    margin: 0 auto;
+    border: 0.1875rem solid var(--mid);
+    border-radius: 50%;
+  }
+  .stops li:last-child .dot { background: var(--hi); border-color: var(--hi); }
+  .stops li:last-child .name { font-weight: 700; }
+  .stops .name { min-width: 0; overflow-wrap: anywhere; }
+  .stops .time { color: var(--mid); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<main id="list-screen">
+  <header>
+    <h1>Central Station</h1>
+    <span class="tag">Sample data</span>
+  </header>
+  <ul id="list"></ul>
+</main>
+
+<main id="detail-screen" hidden>
+  <header>
+    <h1 id="d-title"></h1>
+    <span class="tag">Sample data</span>
+  </header>
+  <p class="facts" id="d-facts"></p>
+  <ol class="stops" id="d-stops"></ol>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  // Sample data. Not live.
+  var DEPARTURES = [
+    { id: "s3", line: "S3", dest: "Airport", platform: "2", mins: 2, late: 0,
+      stops: [["Market Square", 3], ["University", 6], ["Riverside", 9], ["Trade Fair", 14], ["Airport", 19]] },
+    { id: "re5", line: "RE 5", dest: "Harbour City", platform: "7", mins: 4, late: 3,
+      stops: [["Northgate", 9], ["Millbrook", 17], ["Lakeview", 26], ["Old Quay", 38], ["Harbour City", 45]] },
+    { id: "ic204", line: "IC 204", dest: "Eastfield", platform: "11", mins: 9, late: 0,
+      stops: [["Stonebridge", 31], ["Ashford Vale", 58], ["Kingsmoor", 84], ["Eastfield", 112]] },
+    { id: "s1", line: "S1", dest: "Westpark", platform: "1", mins: 12, late: 0,
+      stops: [["Old Town", 14], ["Zoo", 17], ["Stadium", 21], ["Hillside", 25], ["Westpark", 29]] },
+    { id: "rb22", line: "RB 22", dest: "Pinewood", platform: "5", mins: 17, late: 6,
+      stops: [["Northgate", 23], ["Fernhill", 31], ["Quarry Lane", 39], ["Pinewood", 48]] },
+    { id: "ice71", line: "ICE 71", dest: "Southport", platform: "9", mins: 24, late: 0,
+      stops: [["Stonebridge", 44], ["Whitcombe", 79], ["Marlow Cross", 118], ["Southport", 151]] }
+  ];
+
+  var listScreen = document.getElementById("list-screen");
+  var detailScreen = document.getElementById("detail-screen");
+  var listEl = document.getElementById("list");
+  var lastId = null;
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function minsLabel(m) { return m >= 60 ? Math.floor(m / 60) + " h " + (m % 60) + " min" : m + " min"; }
+
+  function buildList() {
+    DEPARTURES.forEach(function (d) {
+      var li = el("li");
+      var b = el("button", "dep");
+      b.type = "button";
+      b.id = "dep-" + d.id;
+      b.setAttribute("aria-label",
+        d.line + " to " + d.dest + ", platform " + d.platform + ", in " + d.mins + " minutes" +
+        (d.late ? ", " + d.late + " minutes late" : ""));
+      b.appendChild(el("span", "line", d.line));
+      b.appendChild(el("span", "dest", d.dest));
+      b.appendChild(el("span", "sub", "Platform " + d.platform + (d.late ? " · +" + d.late + " late" : "")));
+      var m = el("span", "mins", String(d.mins));
+      m.appendChild(el("small", null, " min"));
+      b.appendChild(m);
+      b.addEventListener("click", function () {
+        lastId = d.id;
+        // One history entry for the detail screen; system Back returns to the list.
+        if (location.hash) location.replace("#" + d.id); else location.hash = d.id;
+      });
+      li.appendChild(b);
+      listEl.appendChild(li);
+    });
+  }
+
+  function showDetail(d) {
+    document.getElementById("d-title").textContent = d.line + " " + d.dest;
+    var facts = document.getElementById("d-facts");
+    facts.textContent = "";
+    var p = el("span", null, "Platform ");
+    p.appendChild(el("b", null, d.platform));
+    var t = el("span", null, "In ");
+    t.appendChild(el("b", null, minsLabel(d.mins)));
+    facts.appendChild(p);
+    facts.appendChild(t);
+    if (d.late) facts.appendChild(el("span", null, "+" + d.late + " late"));
+
+    var stops = document.getElementById("d-stops");
+    stops.textContent = "";
+    d.stops.forEach(function (s) {
+      var li = el("li");
+      li.appendChild(el("span", "dot"));
+      li.appendChild(el("span", "name", s[0]));
+      li.appendChild(el("span", "time", minsLabel(s[1])));
+      stops.appendChild(li);
+    });
+    listScreen.hidden = true;
+    detailScreen.hidden = false;
+    document.title = d.line + " " + d.dest;
+    window.scrollTo(0, 0);
+  }
+
+  function showList() {
+    detailScreen.hidden = true;
+    listScreen.hidden = false;
+    document.title = "Departures";
+    var target = (lastId && document.getElementById("dep-" + lastId)) || listEl.querySelector("button");
+    if (target) target.focus();
+  }
+
+  function route() {
+    var id = location.hash.slice(1);
+    var d = DEPARTURES.filter(function (x) { return x.id === id; })[0];
+    if (d) { lastId = d.id; showDetail(d); } else showList();
+  }
+
+  buildList();
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "id": "even-recipe",
+  "device": "even-g2",
+  "prompt": "Build an Even Hub app for Even Realities G2 glasses that walks a cook through a recipe. It offers three recipes to choose from, shows the ingredients of the chosen one, and then the steps one after another. Deliver one file, index.html, with JavaScript inline in a module script. Import the SDK from https://cdn.jsdelivr.net/npm/@evenrealities/even_hub_sdk@0.0.16/dist/index.js. Use sample data written into the file. No build step. The SDK's README is provided as reference."
+}

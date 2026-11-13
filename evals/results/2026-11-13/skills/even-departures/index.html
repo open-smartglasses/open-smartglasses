@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Departures</title>
+<style>
+  body { margin: 0; padding: 1.5rem; background: #000; color: #d8ffd8; font: 400 1rem/1.5 system-ui, sans-serif; }
+  h1 { font-size: 1.25rem; margin: 0 0 .5rem; }
+  p { margin: 0 0 .5rem; }
+</style>
+</head>
+<body>
+<h1>Departures</h1>
+<p>The board is shown on your glasses. Swipe to move, press to see the stops, double press to go back.</p>
+<p id="status">Connecting to glasses…</p>
+
+<script type="module">
+import {
+  waitForEvenAppBridge,
+  OsEventTypeList,
+  StartUpPageCreateResult,
+} from 'https://cdn.jsdelivr.net/npm/@evenrealities/even_hub_sdk@0.0.16/dist/index.js';
+
+// ---- Sample data (not live). `first` = minutes after app start, `every` = repeat interval.
+const STATION = 'Central';
+const SAMPLE = [
+  { line: 'S1',     dest: 'Airport',      platform: '2',  first: 2,  every: 10,
+    stops: [['Central', 0], ['Market Square', 3], ['University', 6], ['Riverside', 10], ['Expo Park', 15], ['Airport', 22]] },
+  { line: 'RE 7',   dest: 'Northfield',   platform: '5',  first: 4,  every: 30,
+    stops: [['Central', 0], ['Old Town', 6], ['Lakeview', 14], ['Millbrook', 23], ['Northfield', 35]] },
+  { line: 'IC 204', dest: 'Port Haven',   platform: '8',  first: 7,  every: 60,
+    stops: [['Central', 0], ['Eastgate', 12], ['Stonebridge', 38], ['Marlow', 61], ['Port Haven', 94]] },
+  { line: 'S3',     dest: 'West End',     platform: '1',  first: 9,  every: 15,
+    stops: [['Central', 0], ['City Hall', 2], ['Museum', 5], ['Stadium', 9], ['Garden City', 13], ['West End', 18]] },
+  { line: 'RB 22',  dest: 'Pinewood',     platform: '4',  first: 13, every: 30,
+    stops: [['Central', 0], ['Southgate', 5], ['Hillcrest', 11], ['Ashford', 19], ['Pinewood', 27]] },
+  { line: 'ICE 91', dest: 'Kingsport',    platform: '9',  first: 18, every: 120,
+    stops: [['Central', 0], ['Eastgate', 11], ['Brightwater', 52], ['Kingsport', 118]] },
+  { line: 'S5',     dest: 'Harbour',      platform: '3',  first: 21, every: 20,
+    stops: [['Central', 0], ['Market Square', 3], ['Docklands', 8], ['Ferry Pier', 12], ['Harbour', 16]] },
+  { line: 'RE 12',  dest: 'Silver Lake',  platform: '6',  first: 26, every: 60,
+    stops: [['Central', 0], ['Old Town', 6], ['Greenfield', 17], ['Oakham', 29], ['Silver Lake', 44]] },
+];
+
+const MAX_ROWS = 7;          // one swipe per row: keep the board short
+const W = 576, H = 288, HEAD_H = 40;
+const startedAt = Date.now();
+
+let bridge;
+let created = false;
+let view = 'list';           // 'list' | 'stops'
+let board = [];              // departures currently on the glasses, in list order
+let lastKey = '';
+
+const clock = (ms) => {
+  const d = new Date(ms);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+};
+
+function upcoming() {
+  const elapsed = Math.floor((Date.now() - startedAt) / 60000);
+  return SAMPLE.map((d) => {
+    let mins = d.first - elapsed;
+    while (mins < 0) mins += d.every;
+    return { ...d, mins, departsAt: startedAt + (elapsed + mins) * 60000 };
+  }).sort((a, b) => a.mins - b.mins).slice(0, MAX_ROWS);
+}
+
+const rowText = (d) =>
+  `${d.mins === 0 ? 'now' : d.mins + ' min'}  ${d.line}  ${d.dest}  Pl ${d.platform}`.slice(0, 64);
+
+async function send(page) {
+  if (!created) {
+    const r = await bridge.createStartUpPageContainer(page);
+    created = r === StartUpPageCreateResult.success;
+    return created;
+  }
+  return bridge.rebuildPageContainer(page);
+}
+
+async function showList() {
+  view = 'list';
+  board = upcoming();
+  const items = board.map(rowText);
+  lastKey = items.join('|');
+  await send({
+    containerTotalNum: 2,
+    textObject: [{
+      xPosition: 0, yPosition: 0, width: W, height: HEAD_H,
+      containerID: 1, containerName: 'head',
+      content: `${STATION} (sample)`,
+      isEventCapture: 0,
+    }],
+    listObject: [{
+      xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H,
+      containerID: 2, containerName: 'departures',
+      itemContainer: { itemCount: items.length, itemName: items },
+      isEventCapture: 1,
+    }],
+  });
+}
+
+async function showStops(d) {
+  view = 'stops';
+  const lines = d.stops.map(([name, offset], i) =>
+    `${clock(d.departsAt + offset * 60000)}  ${name}${i === 0 ? '  Pl ' + d.platform : ''}`);
+  await send({
+    containerTotalNum: 2,
+    textObject: [{
+      xPosition: 0, yPosition: 0, width: W, height: HEAD_H,
+      containerID: 1, containerName: 'head',
+      content: `${d.line}  ${d.dest}`,
+      isEventCapture: 0,
+    }, {
+      xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H,
+      containerID: 3, containerName: 'stops',
+      content: lines.join('\n'),
+      isEventCapture: 1,
+    }],
+  });
+}
+
+function onEvent(event) {
+  const part = event.listEvent || event.textEvent || event.sysEvent;
+  if (!part) return;
+  // A plain press can arrive with eventType omitted (value 0).
+  const type = part.eventType ?? OsEventTypeList.CLICK_EVENT;
+
+  if (type === OsEventTypeList.DOUBLE_CLICK_EVENT) {
+    if (view === 'stops') showList();
+    else bridge.shutDownPageContainer(1);
+    return;
+  }
+
+  if (view === 'list' && event.listEvent && type === OsEventTypeList.CLICK_EVENT) {
+    const le = event.listEvent;
+    const byName = board.find((d) => rowText(d) === le.currentSelectItemName);
+    const picked = byName || board[le.currentSelectItemIndex ?? 0];
+    if (picked) showStops(picked);
+  }
+}
+
+const status = document.getElementById('status');
+try {
+  bridge = await waitForEvenAppBridge();
+  bridge.onEvenHubEvent(onEvent);
+  await showList();
+  status.textContent = created ? 'Showing sample departures on your glasses.' : 'Could not start the glasses page.';
+
+  // Minutes count down: a list cannot be changed in place, so rebuild when a row changes.
+  setInterval(() => {
+    if (view !== 'list') return;
+    if (upcoming().map(rowText).join('|') !== lastKey) showList();
+  }, 15000);
+} catch (err) {
+  status.textContent = 'Open this app inside the Even app to use it.';
+  console.error(err);
+}
+</script>
+</body>
+</html>

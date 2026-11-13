@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipe Guide</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px;
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: #101412; color: #e6efe8;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  #status { font-size: 13px; color: #8fa397; margin-bottom: 14px; }
+  #lens {
+    border: 1px solid #2f5b3d; border-radius: 10px; background: #050806;
+    color: #5dff8f; font-family: ui-monospace, Consolas, monospace; font-size: 14px;
+    padding: 12px; min-height: 190px; white-space: pre-wrap;
+  }
+  #lens .head { color: #b7ffcd; margin-bottom: 8px; }
+  #lens .foot { color: #3f9d5d; margin-top: 10px; font-size: 12px; }
+  #lens .sel { background: #123a20; }
+  .row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button {
+    flex: 1 1 0; min-width: 90px; padding: 12px 8px; border-radius: 8px;
+    border: 1px solid #2f5b3d; background: #16241b; color: inherit; font: inherit;
+  }
+  button:active { background: #1f3a29; }
+  p.help { font-size: 13px; color: #8fa397; }
+</style>
+</head>
+<body>
+  <h1>Recipe Guide</h1>
+  <div id="status">Waiting for Even App...</div>
+  <div id="lens"></div>
+  <div class="row">
+    <button id="bPrev">Swipe up</button>
+    <button id="bNext">Swipe down</button>
+  </div>
+  <div class="row">
+    <button id="bTap">Tap</button>
+    <button id="bDouble">Double tap</button>
+  </div>
+  <p class="help">
+    On the glasses: swipe to move through the list and tap to open a recipe.
+    Inside a recipe, tap or swipe down for the next page, swipe up for the previous one,
+    double tap to return to the recipe list. Double tap on the list to exit.
+  </p>
+
+<script type="module">
+import {
+  waitForEvenAppBridge,
+  OsEventTypeList,
+  StartUpPageCreateResult,
+} from 'https://cdn.jsdelivr.net/npm/@evenrealities/even_hub_sdk@0.0.16/dist/index.js';
+
+/* ---------- sample data ---------- */
+const RECIPES = [
+  {
+    name: 'Tomato Basil Pasta',
+    meta: '20 min - serves 2',
+    ingredients: [
+      '200 g spaghetti',
+      '2 tbsp olive oil',
+      '3 garlic cloves, sliced',
+      '400 g can chopped tomatoes',
+      '1/2 tsp salt',
+      '1 pinch chili flakes',
+      '1 handful fresh basil',
+      '30 g grated parmesan',
+    ],
+    steps: [
+      'Bring a large pot of salted water to a boil. Add the spaghetti and cook for 9 minutes.',
+      'Meanwhile warm the olive oil in a wide pan over medium heat. Add the garlic and chili flakes, stir for 1 minute.',
+      'Pour in the tomatoes and salt. Simmer for 8 minutes until slightly thick.',
+      'Scoop out half a cup of pasta water, then drain the spaghetti.',
+      'Toss the spaghetti in the sauce. Loosen with a splash of pasta water.',
+      'Tear in the basil, plate up and top with parmesan.',
+    ],
+  },
+  {
+    name: 'Veggie Fried Rice',
+    meta: '15 min - serves 2',
+    ingredients: [
+      '2 cups cold cooked rice',
+      '2 eggs, beaten',
+      '1 carrot, diced small',
+      '1/2 cup frozen peas',
+      '2 spring onions, sliced',
+      '2 tbsp soy sauce',
+      '1 tbsp neutral oil',
+      '1 tsp sesame oil',
+    ],
+    steps: [
+      'Heat half the neutral oil in a wok over high heat. Scramble the eggs for 30 seconds, then set them aside.',
+      'Add the remaining oil. Stir-fry the carrot for 2 minutes.',
+      'Add the peas and the white parts of the spring onions. Cook for 1 minute.',
+      'Add the rice and break up any clumps. Fry for 3 minutes, stirring often.',
+      'Pour in the soy sauce and sesame oil. Return the eggs and toss everything together.',
+      'Scatter the green spring onion on top and serve hot.',
+    ],
+  },
+  {
+    name: 'Banana Pancakes',
+    meta: '15 min - makes 6',
+    ingredients: [
+      '1 ripe banana',
+      '1 egg',
+      '150 ml milk',
+      '120 g plain flour',
+      '1 tsp baking powder',
+      '1 pinch salt',
+      'Butter for the pan',
+      'Maple syrup to serve',
+    ],
+    steps: [
+      'Mash the banana in a bowl until smooth. Whisk in the egg and milk.',
+      'Add the flour, baking powder and salt. Stir until just combined; small lumps are fine.',
+      'Melt a little butter in a non-stick pan over medium heat.',
+      'Pour in about 3 tbsp of batter per pancake. Cook for 2 minutes until bubbles appear.',
+      'Flip and cook for 1 more minute until golden. Repeat with the rest of the batter.',
+      'Stack the pancakes and serve with maple syrup.',
+    ],
+  },
+];
+
+/* ---------- layout (G2 canvas is 576 x 288) ---------- */
+const W = 576, H = 288;
+const HEAD_H = 40, FOOT_H = 34;
+const INGREDIENTS_PER_PAGE = 6;
+
+const ID = { title: 1, list: 2, head: 3, body: 4, foot: 5 };
+const NAME = { title: 'menu-title', list: 'menu-list', head: 'r-head', body: 'r-body', foot: 'r-foot' };
+
+/* ---------- event codes (fallbacks in case the enum shape differs) ---------- */
+const EV = {
+  CLICK: OsEventTypeList?.CLICK_EVENT ?? 0,
+  SCROLL_TOP: OsEventTypeList?.SCROLL_TOP_EVENT ?? 1,
+  SCROLL_BOTTOM: OsEventTypeList?.SCROLL_BOTTOM_EVENT ?? 2,
+  DOUBLE_CLICK: OsEventTypeList?.DOUBLE_CLICK_EVENT ?? 3,
+};
+
+/* ---------- state ---------- */
+const state = {
+  screen: 'menu',     // 'menu' | 'recipe'
+  menuIndex: 0,       // highlighted recipe (tracked for the phone mirror)
+  recipe: 0,
+  page: 0,
+  pages: [],
+};
+
+let bridge = null;
+let pageCreated = false;
+let shownScreen = null;   // which layout is currently on the glasses
+
+function buildPages(recipe) {
+  const pages = [];
+  const ing = recipe.ingredients;
+  const ingPages = Math.ceil(ing.length / INGREDIENTS_PER_PAGE);
+  for (let p = 0; p < ingPages; p++) {
+    const chunk = ing.slice(p * INGREDIENTS_PER_PAGE, (p + 1) * INGREDIENTS_PER_PAGE);
+    pages.push({
+      label: ingPages > 1 ? `Ingredients ${p + 1}/${ingPages}` : 'Ingredients',
+      body: chunk.map((line) => `- ${line}`).join('\n'),
+    });
+  }
+  recipe.steps.forEach((text, i) => {
+    pages.push({ label: `Step ${i + 1}/${recipe.steps.length}`, body: text });
+  });
+  pages.push({ label: 'Done', body: `${recipe.name} is ready.\nEnjoy your meal!` });
+  return pages;
+}
+
+function view() {
+  if (state.screen === 'menu') {
+    return {
+      head: 'Choose a recipe',
+      items: RECIPES.map((r) => r.name),
+      foot: 'Tap: open   Double tap: exit',
+    };
+  }
+  const recipe = RECIPES[state.recipe];
+  const page = state.pages[state.page];
+  const last = state.page === state.pages.length - 1;
+  return {
+    head: `${recipe.name} | ${page.label}`,
+    body: page.body,
+    foot: last ? 'Tap: recipe list   Swipe up: back' : 'Tap: next   Swipe up: back   2x tap: list',
+  };
+}
+
+/* ---------- glasses rendering ---------- */
+function menuContainers(v) {
+  return {
+    containerTotalNum: 2,
+    textObject: [{
+      xPosition: 0, yPosition: 0, width: W, height: HEAD_H,
+      containerID: ID.title, containerName: NAME.title,
+      content: v.head, isEventCapture: 0,
+    }],
+    listObject: [{
+      xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H,
+      containerID: ID.list, containerName: NAME.list,
+      paddingLength: 4,
+      itemContainer: {
+        itemCount: v.items.length,
+        itemWidth: 0,
+        isItemSelectBorderEn: 1,
+        itemName: v.items,
+      },
+      isEventCapture: 1,
+    }],
+  };
+}
+
+function recipeContainers(v) {
+  return {
+    containerTotalNum: 3,
+    textObject: [{
+      xPosition: 0, yPosition: 0, width: W, height: HEAD_H,
+      containerID: ID.head, containerName: NAME.head,
+      content: v.head, isEventCapture: 0,
+    }, {
+      xPosition: 0, yPosition: HEAD_H, width: W, height: H - HEAD_H - FOOT_H,
+      containerID: ID.body, containerName: NAME.body,
+      paddingLength: 6,
+      content: v.body, isEventCapture: 1,
+    }, {
+      xPosition: 0, yPosition: H - FOOT_H, width: W, height: FOOT_H,
+      containerID: ID.foot, containerName: NAME.foot,
+      content: v.foot, textColor: 2, isEventCapture: 0,
+    }],
+  };
+}
+
+async function pushToGlasses() {
+  if (!bridge) return;
+  const v = view();
+
+  // Same layout already showing: update the text in place (no flicker).
+  if (pageCreated && shownScreen === 'recipe' && state.screen === 'recipe') {
+    await bridge.textContainerUpgrade({ containerID: ID.head, containerName: NAME.head, content: v.head });
+    await bridge.textContainerUpgrade({ containerID: ID.body, containerName: NAME.body, content: v.body });
+    await bridge.textContainerUpgrade({ containerID: ID.foot, containerName: NAME.foot, content: v.foot });
+    return;
+  }
+  if (pageCreated && shownScreen === 'menu' && state.screen === 'menu') return;
+
+  const containers = state.screen === 'menu' ? menuContainers(v) : recipeContainers(v);
+  if (!pageCreated) {
+    const result = await bridge.createStartUpPageContainer(containers);
+    if (result !== StartUpPageCreateResult.success) {
+      // The page may already exist (e.g. WebView reload); try a rebuild instead.
+      const ok = await bridge.rebuildPageContainer(containers);
+      if (!ok) throw new Error(`Could not create glasses page (result ${result})`);
+    }
+    pageCreated = true;
+  } else {
+    const ok = await bridge.rebuildPageContainer(containers);
+    if (!ok) throw new Error('Could not rebuild glasses page');
+  }
+  shownScreen = state.screen;
+  if (state.screen === 'menu') state.menuIndex = 0; // a rebuilt list starts at the first item
+}
+
+// Bridge calls run one at a time, always rendering the newest state.
+let rendering = false, renderAgain = false;
+async function render() {
+  renderPhone();
+  if (rendering) { renderAgain = true; return; }
+  rendering = true;
+  try {
+    do {
+      renderAgain = false;
+      await pushToGlasses();
+      renderPhone();
+    } while (renderAgain);
+  } catch (err) {
+    console.error(err);
+    setStatus(`Glasses error: ${err?.message ?? err}`);
+  } finally {
+    rendering = false;
+  }
+}
+
+/* ---------- actions ---------- */
+function openRecipe(index) {
+  state.recipe = Math.max(0, Math.min(RECIPES.length - 1, index));
+  state.pages = buildPages(RECIPES[state.recipe]);
+  state.page = 0;
+  state.screen = 'recipe';
+  render();
+}
+
+function backToMenu() {
+  state.screen = 'menu';
+  render();
+}
+
+function nextPage() {
+  if (state.page < state.pages.length - 1) { state.page++; render(); }
+}
+
+function prevPage() {
+  if (state.page > 0) { state.page--; render(); }
+}
+
+function tapInRecipe() {
+  if (state.page === state.pages.length - 1) backToMenu();
+  else nextPage();
+}
+
+async function exitApp() {
+  if (!bridge) return;
+  try { await bridge.shutDownPageContainer(1); } catch (err) { console.error(err); }
+}
+
+/* ---------- glasses input ---------- */
+let lastInputAt = 0;
+
+function handleHubEvent(event) {
+  const list = event.listEvent;
+  const text = event.textEvent;
+  const sys = event.sysEvent;
+  const src = list ?? text ?? sys;
+  if (!src) return;
+
+  // A click arrives with eventType 0, which may be dropped during parsing.
+  const type = src.eventType ?? EV.CLICK;
+  if (![EV.CLICK, EV.SCROLL_TOP, EV.SCROLL_BOTTOM, EV.DOUBLE_CLICK].includes(type)) return;
+
+  // The same gesture can be reported twice (e.g. as textEvent and sysEvent).
+  const now = Date.now();
+  if (now - lastInputAt < 120) return;
+  lastInputAt = now;
+
+  if (state.screen === 'menu') {
+    if (list) {
+      let index = list.currentSelectItemIndex;
+      if (typeof index !== 'number') {
+        const byName = RECIPES.findIndex((r) => r.name === list.currentSelectItemName);
+        index = byName >= 0 ? byName : 0;
+      }
+      state.menuIndex = index;
+      if (type === EV.CLICK) openRecipe(index);
+      else if (type === EV.DOUBLE_CLICK) exitApp();
+      else renderPhone();
+    } else if (type === EV.DOUBLE_CLICK) {
+      exitApp();
+    }
+    return;
+  }
+
+  if (type === EV.CLICK) tapInRecipe();
+  else if (type === EV.SCROLL_BOTTOM) nextPage();
+  else if (type === EV.SCROLL_TOP) prevPage();
+  else if (type === EV.DOUBLE_CLICK) backToMenu();
+}
+
+/* ---------- phone mirror ---------- */
+const $ = (id) => document.getElementById(id);
+function setStatus(text) { $('status').textContent = text; }
+
+function renderPhone() {
+  const v = view();
+  const lens = $('lens');
+  lens.textContent = '';
+  const add = (cls, text) => {
+    const el = document.createElement('div');
+    if (cls) el.className = cls;
+    el.textContent = text;
+    lens.appendChild(el);
+    return el;
+  };
+  add('head', v.head);
+  if (v.items) {
+    v.items.forEach((name, i) => {
+      const el = add(i === state.menuIndex ? 'sel' : '', `${i === state.menuIndex ? '>' : ' '} ${name}  (${RECIPES[i].meta})`);
+      el.addEventListener('click', () => openRecipe(i));
+    });
+  } else {
+    add('', v.body);
+  }
+  add('foot', v.foot);
+}
+
+// Phone buttons mirror the glasses gestures (handy for testing without glasses).
+$('bPrev').addEventListener('click', () => {
+  if (state.screen === 'menu') { state.menuIndex = Math.max(0, state.menuIndex - 1); renderPhone(); }
+  else prevPage();
+});
+$('bNext').addEventListener('click', () => {
+  if (state.screen === 'menu') { state.menuIndex = Math.min(RECIPES.length - 1, state.menuIndex + 1); renderPhone(); }
+  else nextPage();
+});
+$('bTap').addEventListener('click', () => {
+  if (state.screen === 'menu') openRecipe(state.menuIndex);
+  else tapInRecipe();
+});
+$('bDouble').addEventListener('click', () => {
+  if (state.screen === 'menu') exitApp();
+  else backToMenu();
+});
+
+/* ---------- start ---------- */
+renderPhone();
+try {
+  bridge = await waitForEvenAppBridge();
+  bridge.onEvenHubEvent(handleHubEvent);
+  setStatus('Connected. Look at your glasses.');
+  await render();
+} catch (err) {
+  console.error(err);
+  setStatus(`Even App bridge unavailable: ${err?.message ?? err}`);
+}
+</script>
+</body>
+</html>

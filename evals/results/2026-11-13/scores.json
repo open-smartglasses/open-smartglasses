@@ -1,0 +1,181 @@
+[
+  {
+    "task": "even-departures",
+    "condition": "baseline",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 1,
+    "rules": [
+      "info input/many-choices"
+    ],
+    "metrics": {
+      "pagesCreated": 1,
+      "containers": 2,
+      "imageContainers": 0,
+      "textUpdates": 0,
+      "hostCalls": [
+        "createStartUpPageContainer"
+      ]
+    }
+  },
+  {
+    "task": "even-departures",
+    "condition": "skills",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "rules": [],
+    "metrics": {
+      "pagesCreated": 1,
+      "containers": 2,
+      "imageContainers": 0,
+      "textUpdates": 0,
+      "hostCalls": [
+        "createStartUpPageContainer"
+      ]
+    }
+  },
+  {
+    "task": "even-recipe",
+    "condition": "baseline",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "rules": [],
+    "metrics": {
+      "pagesCreated": 1,
+      "containers": 2,
+      "imageContainers": 0,
+      "textUpdates": 0,
+      "hostCalls": [
+        "createStartUpPageContainer"
+      ]
+    }
+  },
+  {
+    "task": "even-recipe",
+    "condition": "skills",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "rules": [],
+    "metrics": {
+      "pagesCreated": 1,
+      "containers": 2,
+      "imageContainers": 0,
+      "textUpdates": 0,
+      "hostCalls": [
+        "createStartUpPageContainer"
+      ]
+    }
+  },
+  {
+    "task": "mrbd-departures",
+    "condition": "baseline",
+    "errors": 1,
+    "warnings": 3,
+    "notes": 0,
+    "rules": [
+      "error text/min-size",
+      "warn text/min-size",
+      "warn layout/viewport-meta",
+      "warn layout/viewport-meta"
+    ],
+    "metrics": {
+      "textNodes": 48,
+      "controls": 7,
+      "smallestTextPx": 15,
+      "litRatio": 0.072,
+      "brightRatio": 0.064,
+      "scrollHeight": 600
+    }
+  },
+  {
+    "task": "mrbd-departures",
+    "condition": "skills",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "rules": [],
+    "metrics": {
+      "textNodes": 32,
+      "controls": 6,
+      "smallestTextPx": 26,
+      "litRatio": 0.109,
+      "brightRatio": 0.071,
+      "scrollHeight": 600
+    }
+  },
+  {
+    "task": "mrbd-recipe",
+    "condition": "baseline",
+    "errors": 0,
+    "warnings": 3,
+    "notes": 1,
+    "rules": [
+      "warn text/min-size",
+      "info text/dark-on-light",
+      "warn layout/viewport-meta",
+      "warn layout/viewport-meta"
+    ],
+    "metrics": {
+      "textNodes": 12,
+      "controls": 0,
+      "smallestTextPx": 22,
+      "litRatio": 0.088,
+      "brightRatio": 0.061,
+      "scrollHeight": 600
+    }
+  },
+  {
+    "task": "mrbd-recipe",
+    "condition": "skills",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "rules": [],
+    "metrics": {
+      "textNodes": 7,
+      "controls": 3,
+      "smallestTextPx": 26,
+      "litRatio": 0.056,
+      "brightRatio": 0.04,
+      "scrollHeight": 600
+    }
+  },
+  {
+    "task": "mrbd-timer",
+    "condition": "baseline",
+    "errors": 0,
+    "warnings": 2,
+    "notes": 0,
+    "rules": [
+      "warn layout/viewport-meta",
+      "warn layout/viewport-meta"
+    ],
+    "metrics": {
+      "textNodes": 7,
+      "controls": 2,
+      "smallestTextPx": 26,
+      "litRatio": 0.084,
+      "brightRatio": 0.074,
+      "scrollHeight": 600
+    }
+  },
+  {
+    "task": "mrbd-timer",
+    "condition": "skills",
+    "errors": 0,
+    "warnings": 0,
+    "notes": 0,
+    "rules": [],
+    "metrics": {
+      "textNodes": 7,
+      "controls": 2,
+      "smallestTextPx": 30,
+      "litRatio": 0.072,
+      "brightRatio": 0.069,
+      "scrollHeight": 600
+    }
+  }
+]
