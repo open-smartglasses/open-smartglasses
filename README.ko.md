@@ -28,6 +28,10 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 
 글자, 색, 레이아웃, 입력에 걸쳐 규칙 15개가 있다. 규칙마다 설명과 출처는 [지침](./guidelines)에 있다(영어).
 
+## 코딩 에이전트와 쓰기
+
+[`skills/hud-design`](./skills/hud-design)과 [`skills/hud-review`](./skills/hud-review)를 에이전트의 스킬 폴더에 복사하거나, [`skills/AGENTS.md`](./skills/AGENTS.md)를 프로젝트의 `AGENTS.md`에 붙인다. 앞의 것은 에이전트가 화면을 쓰기 전에 설계 규칙을 읽게 하고, 뒤의 것은 결과에 lint를 돌리게 한다.
+
 ## 왜 필요한가
 
 2026-11-12에 공개된 Ray-Ban Display 웹 앱 249개를 600×600으로 띄워 쟀다. 첫 화면에 글자가 있는 219개 가운데:
@@ -44,7 +48,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 | **[지침](./guidelines)** | 글자 가독성, additive·단색 디스플레이의 색, 1차원 입력, 화면당 정보량, 프라이버시. 각도 크기·톤·초 단위로 적어 기기가 달라도 그대로 쓴다. |
 | **[기기 프로파일](./data)** | 기기별 디스플레이·입력·런타임 사실. Meta Ray-Ban Display, Even G2, Android XR이 있다. 사실마다 출처, 확인한 날짜, `unknown`부터 `hardware`까지의 등급이 붙는다. |
 | **lint** | 앱을 headless로 렌더링해 스크린샷을 지침에 맞춰 검사한다. 구조 검사는 런타임마다 어댑터 하나로 돈다. |
-| **에이전트 스킬** | 모든 플랫폼 공통인 `hud-design`·`hud-review`, 플랫폼별 짧은 노트, `AGENTS.md` 블록. |
+| **[에이전트 스킬](./skills)** | 모든 플랫폼 공통인 `hud-design`·`hud-review`, `AGENTS.md` 블록. |
 | **평가** | 렌더링된 결과로 채점하는 과제. 스킬이 있을 때와 없을 때를 비교한다. |
 
 ## 플랫폼

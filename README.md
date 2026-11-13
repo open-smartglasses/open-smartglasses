@@ -28,6 +28,10 @@ Each finding says where its threshold comes from: a vendor rule, a value derived
 
 It has 15 rules for text, color, layout and input. The [guidelines](./guidelines) explain each one and give its source.
 
+## Use with a coding agent
+
+Copy [`skills/hud-design`](./skills/hud-design) and [`skills/hud-review`](./skills/hud-review) into your agent's skills folder, or append [`skills/AGENTS.md`](./skills/AGENTS.md) to your project's `AGENTS.md`. The first gives the agent the design rules before it writes a screen. The second has it run the lint on the result.
+
 ## Why
 
 We rendered 249 public Ray-Ban Display web apps at 600×600 on 2026-11-12. Of the 219 that show text on the first screen:
@@ -44,7 +48,7 @@ The median body text size was 16px, the web default. Across all the apps that lo
 | **[Guidelines](./guidelines)** | Text legibility, color on additive and monochrome displays, one-dimensional input, information per screen, privacy. Written in angular size, tone and seconds, so they hold across devices. |
 | **[Device profiles](./data)** | Display, input and runtime facts per device: Meta Ray-Ban Display, Even G2, Android XR. Each fact carries its source, the date it was checked, and a grade from `unknown` to `hardware`. |
 | **Lint** | Renders an app headlessly and checks the screenshot against the guidelines. Structural checks run through one adapter per runtime. |
-| **Agent skills** | `hud-design` and `hud-review` for every platform, short notes per platform, and an `AGENTS.md` block. |
+| **[Agent skills](./skills)** | `hud-design` and `hud-review` for every platform, and an `AGENTS.md` block. |
 | **Evals** | Tasks scored on the rendered result, with and without the skills. |
 
 ## Platforms

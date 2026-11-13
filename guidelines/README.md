@@ -8,6 +8,7 @@ Design rules for apps on display glasses. They are written in units that do not 
 | [Color](./color.md) | Color and brightness on additive and monochrome displays |
 | [Input](./input.md) | Gesture input, focus and navigation |
 | [Density](./density.md) | How much goes on one screen |
+| [Privacy](./privacy.md) | Capture, identification, permissions and safety |
 
 ## Basis
 
