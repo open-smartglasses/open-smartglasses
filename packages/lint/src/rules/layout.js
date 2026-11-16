@@ -1,4 +1,4 @@
-import { META_LAYOUT } from '../sources.js';
+import { META_LAYOUT, META_QA_VIEWPORT } from '../sources.js';
 
 export const overflow = {
   id: 'layout/overflow',
@@ -39,8 +39,8 @@ export const viewportMeta = {
     if (fixed) {
       findings.push({
         ...base,
-        severity: 'warn',
-        message: `Viewport meta fixes the width at ${fixed[1]}px. Use width=device-width and lay out from the real viewport.`,
+        severity: 'info',
+        message: `Viewport meta fixes the width at ${fixed[1]}px. Meta's layout guide says to use width=device-width. The QA test in Meta's simulator asks for width=600 instead (${META_QA_VIEWPORT}).`,
       });
     } else if (!/width\s*=\s*device-width/.test(content)) {
       findings.push({ ...base, severity: 'error', message: `Viewport meta has no width. Use ${wanted}.` });

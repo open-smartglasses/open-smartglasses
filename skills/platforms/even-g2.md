@@ -17,6 +17,7 @@ The app is a web page inside the Even phone app. It does not draw pixels. It sen
 ## Text and lists
 
 - A text container takes 1,000 characters when a page is created or rebuilt, and 2,000 in an update. About 400 to 500 fill the screen.
+- Limits are counted in UTF-8 bytes: 999 per text container and 63 per list item in the simulator. Korean, Japanese and Chinese characters take 3 bytes each.
 - A list holds 20 items of 64 characters. Keep it to 7 where you can: each item is one swipe.
 - A list cannot be changed in place. Rebuild the page.
 - A container name is 16 characters at most.

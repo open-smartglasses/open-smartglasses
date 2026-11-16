@@ -44,7 +44,7 @@ function toPage(data) {
   const containers = [];
   for (const c of data?.textObject ?? []) {
     const content = c.content ?? '';
-    containers.push({ kind: 'text', ...rect(c), content, createdChars: content.length });
+    containers.push({ kind: 'text', ...rect(c), content, createdChars: content.length, createdBytes: utf8Bytes(content) });
   }
   for (const c of data?.listObject ?? []) {
     containers.push({ kind: 'list', ...rect(c), items: c.itemContainer?.itemName ?? [] });
@@ -54,6 +54,9 @@ function toPage(data) {
 }
 
 // Replays the recorded calls: the last page created or rebuilt, with later text updates applied.
+// The host counts text in UTF-8 bytes.
+export const utf8Bytes = s => new TextEncoder().encode(s).length;
+
 export function replay(calls) {
   let containers = null;
   let pages = 0;

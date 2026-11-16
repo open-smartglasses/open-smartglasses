@@ -95,12 +95,26 @@
       "source": "https://hub.evenrealities.com/docs/build/display",
       "checked": "2026-11-12"
     },
+    "listItemBytes": {
+      "value": 63,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/reference/changelog",
+      "checked": "2026-11-17",
+      "note": "UTF-8 bytes. The simulator changelog gives this cap; the display page says 64 characters."
+    },
     "textChars": {
       "value": 1000,
       "grade": "docs",
       "source": "https://hub.evenrealities.com/docs/build/display",
       "checked": "2026-11-12",
       "note": "Per text container when a page is created or rebuilt. A full-screen container shows about 400 to 500."
+    },
+    "textBytes": {
+      "value": 999,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/reference/changelog",
+      "checked": "2026-11-17",
+      "note": "UTF-8 bytes per text container. The simulator changelog gives this cap as matching firmware; the display page says 1,000 characters."
     },
     "textUpgradeChars": {
       "value": 2000,

@@ -38,6 +38,7 @@ export function claims({ mrbd, 'even-g2': even, 'android-xr': axr }) {
     { file: 'skills/platforms/even-g2.md', pattern: /holds (\d+) image containers and (\d+) text or list containers/, values: [limits.imageContainers.value, limits.otherContainers.value] },
     { file: 'skills/platforms/even-g2.md', pattern: /An image container is (\d+×\d+) at most/, values: [size(limits.imageSize)] },
     { file: 'skills/platforms/even-g2.md', pattern: /takes ([\d,]+) characters when a page is created or rebuilt, and ([\d,]+) in an update/, values: [thousands(limits.textChars.value), thousands(limits.textUpgradeChars.value)] },
+    { file: 'skills/platforms/even-g2.md', pattern: /UTF-8 bytes: (\d+) per text container and (\d+) per list item/, values: [limits.textBytes.value, limits.listItemBytes.value] },
     { file: 'skills/platforms/even-g2.md', pattern: /A list holds (\d+) items of (\d+) characters/, values: [limits.listItems.value, limits.listItemChars.value] },
     { file: 'skills/platforms/even-g2.md', pattern: /A container name is (\d+) characters at most/, values: [limits.containerNameChars.value] },
 

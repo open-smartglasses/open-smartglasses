@@ -40,7 +40,7 @@ Meta Ray-Ban Display는 첫 화면을 렌더링해 글자, 색, 레이아웃, �
 - 68%에 Meta 자체 하한인 16px보다 작은 글자가 있다.
 - 본문 글자가 시야각 0.6° 이상인 앱은 4%다. 0.6°는 Google이 디스플레이 안경에 제시한 최소 크기다.
 
-본문 글자 크기의 중앙값은 웹 기본값인 16px이었다. 열린 앱 전체로 보면 53%가 뷰포트 너비를 600px로 고정한다. Meta 레이아웃 가이드가 하지 말라고 한 방식이다.
+본문 글자 크기의 중앙값은 웹 기본값인 16px이었다. 열린 앱 전체로 보면 53%가 뷰포트 너비를 600px로 고정한다. Meta 레이아웃 가이드는 하지 말라고 하는데, Meta 시뮬레이터의 QA 테스트는 바로 그 값을 요구한다([열린 보고](https://github.com/meta/meta-wearables-webapp/issues/28)).
 
 ## 구성
 
@@ -59,7 +59,6 @@ Meta Ray-Ban Display는 첫 화면을 렌더링해 글자, 색, 레이아웃, �
 | Meta Ray-Ban Display | Web Apps | 지침, 프로파일, lint, 스킬 |
 | Even Realities G2 | Even Hub | 지침, 프로파일, lint, 스킬 |
 | Android XR 디스플레이 안경 | Jetpack Compose Glimmer | 프로파일 |
-| Rokid, MentraOS | | 프로파일 |
 
 ## 다루지 않는 것
 

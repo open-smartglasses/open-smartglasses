@@ -39,7 +39,7 @@ const cases = [
   ['wide.html', ['error layout/overflow']],
   ['no-viewport.html', ['error layout/viewport-meta']],
   ['no-zoom.html', ['warn layout/viewport-meta']],
-  ['fixed-viewport.html', ['warn layout/viewport-meta']],
+  ['fixed-viewport.html', ['info layout/viewport-meta']],
   ['nested-scroll.html', ['warn layout/nested-scroll']],
   ['tabindex.html', ['error input/positive-tabindex']],
   ['back-button.html', ['warn input/in-app-back']],

@@ -40,7 +40,7 @@ We rendered 249 public Ray-Ban Display web apps at 600×600 on 2026-11-12. Of th
 - 68% have text below Meta's own 16px minimum.
 - 4% have body text at or above 0.6° of visual angle, the minimum Google gives for display glasses.
 
-The median body text size was 16px, the web default. Across all the apps that loaded, 53% fix the viewport width at 600px, which Meta's layout guide says not to do.
+The median body text size was 16px, the web default. Across all the apps that loaded, 53% fix the viewport width at 600px. Meta's layout guide says not to; the QA test in Meta's simulator asks for exactly that ([open report](https://github.com/meta/meta-wearables-webapp/issues/28)).
 
 ## Contents
 
@@ -59,7 +59,6 @@ The median body text size was 16px, the web default. Across all the apps that lo
 | Meta Ray-Ban Display | Web Apps | Guidelines, profile, lint, skill |
 | Even Realities G2 | Even Hub | Guidelines, profile, lint, skill |
 | Android XR display glasses | Jetpack Compose Glimmer | Profile |
-| Rokid, MentraOS | | Profile |
 
 ## Out of scope
 

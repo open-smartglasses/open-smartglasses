@@ -34,8 +34,10 @@ const cases = [
   ['capture-none.html', ['error input/event-capture']],
   ['capture-two.html', ['error input/event-capture']],
   ['list.html', ['error list/length', 'error list/length', 'info input/many-choices']],
+  ['list-korean.html', ['error list/length']],
   ['choices.html', ['info input/many-choices']],
   ['text.html', ['error text/length']],
+  ['text-korean.html', ['error text/length']],
   ['update.html', ['error text/length']],
   ['none.html', ['warn page/none']],
 ];

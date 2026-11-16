@@ -1,6 +1,8 @@
 import { SNAP_DESIGN } from '../sources.js';
+import { utf8Bytes } from '../capture-even.js';
 
 const CHOICE_LIMIT = 7;
+const BYTES_HINT = 'Text is counted in UTF-8 bytes: Korean, Japanese and Chinese characters take 3 each.';
 const label = c => ({ selector: `${c.kind} "${c.name || c.id}"`, text: c.content ?? '' });
 const short = s => (s.length > 40 ? `${s.slice(0, 40)}…` : s);
 
@@ -115,20 +117,20 @@ export const listLength = {
   id: 'list/length',
   run({ page, device }) {
     const findings = [];
-    const { listItems, listItemChars } = device.limits;
+    const { listItems, listItemBytes } = device.limits;
     for (const list of page.containers.filter(c => c.kind === 'list')) {
       if (list.items.length > listItems.value) {
         findings.push(
           vendor(listItems, `List "${list.name}" has ${list.items.length} items. A list holds ${listItems.value} at most.`),
         );
       }
-      const long = list.items.filter(item => item.length > listItemChars.value);
+      const long = list.items.filter(item => utf8Bytes(item) > listItemBytes.value);
       if (long.length) {
         findings.push(
           vendor(
-            listItemChars,
-            `${long.length} item(s) in list "${list.name}" are longer than ${listItemChars.value} characters.`,
-            long.map(item => ({ selector: `${item.length} characters`, text: short(item) })),
+            listItemBytes,
+            `${long.length} item(s) in list "${list.name}" are longer than ${listItemBytes.value} bytes. ${BYTES_HINT}`,
+            long.map(item => ({ selector: `${utf8Bytes(item)} bytes`, text: short(item) })),
           ),
         );
       }
@@ -141,14 +143,14 @@ export const textLength = {
   id: 'text/length',
   run({ page, device }) {
     const findings = [];
-    const { textChars, textUpgradeChars } = device.limits;
-    const created = page.containers.filter(c => c.kind === 'text' && c.createdChars > textChars.value);
+    const { textBytes, textUpgradeChars } = device.limits;
+    const created = page.containers.filter(c => c.kind === 'text' && c.createdBytes > textBytes.value);
     if (created.length) {
       findings.push(
         vendor(
-          textChars,
-          `${created.length} text container(s) created with more than ${textChars.value} characters.`,
-          created.map(c => ({ selector: `text "${c.name || c.id}"`, text: `${c.createdChars} characters` })),
+          textBytes,
+          `${created.length} text container(s) created with more than ${textBytes.value} bytes. ${BYTES_HINT}`,
+          created.map(c => ({ selector: `text "${c.name || c.id}"`, text: `${c.createdBytes} bytes` })),
         ),
       );
     }

@@ -7,3 +7,5 @@ export const GOOGLE_TYPE = 'https://developer.android.com/design/ui/ai-glasses/g
 export const GOOGLE_COLOR = 'https://developer.android.com/design/ui/ai-glasses/guides/styles/color';
 export const SNAP_DESIGN =
   'https://developers.snap.com/spectacles/best-practices/design-for-spectacles/design-best-practices';
+// Open report that Meta's simulator QA test and Meta's layout guide ask for different viewport tags.
+export const META_QA_VIEWPORT = 'https://github.com/meta/meta-wearables-webapp/issues/28';
