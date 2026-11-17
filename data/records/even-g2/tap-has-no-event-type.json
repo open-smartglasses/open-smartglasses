@@ -49,6 +49,18 @@
       "result": "reproduced",
       "date": "2026-11-17",
       "versions": {
+        "sdk": "0.0.16",
+        "simulator": "0.9.5",
+        "os": "Windows 11"
+      },
+      "source": "scripts/probes/even-simulator.mjs",
+      "note": "With a list container capturing events (--container list), a click on the first item arrived as {\"listEvent\":{\"containerID\":1,\"containerName\":\"probe\"}}: no eventType, no currentSelectItemIndex, no currentSelectItemName."
+    },
+    {
+      "level": "simulator",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
         "sdk": "0.0.14",
         "simulator": "0.9.5",
         "os": "Windows 11"

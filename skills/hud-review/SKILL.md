@@ -15,10 +15,10 @@ The lint loads the app and checks what it puts on the display. It supports Meta 
 git clone https://github.com/open-smartglasses/open-smartglasses
 cd open-smartglasses && npm install
 node packages/lint/bin/osg-lint.js <url or html file> --json --screenshot screen.png
-node packages/lint/bin/osg-lint.js <url> --device even-g2 --json
+node packages/lint/bin/osg-lint.js <url> --device even-g2 --manifest app.json --json
 ```
 
-Reuse the clone if it already exists. For an app that is not deployed, start its dev server and pass the local URL.
+Reuse the clone if it already exists. For an app that is not deployed, start its dev server and pass the local URL. For Even G2 the lint taps the app; use a local build or a test backend, or add `--no-taps`.
 
 Exit code 1 means an error-level rule failed. Exit code 2 means the lint could not run; read the message.
 

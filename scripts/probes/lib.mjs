@@ -23,10 +23,18 @@ function untar(buffer, wanted) {
   throw new Error(`${wanted} not found in the package`);
 }
 
-// The SDK's ES module build, fetched from the npm registry.
-export async function sdkSource(version) {
-  const url = `https://registry.npmjs.org/${SDK}/-/even_hub_sdk-${version}.tgz`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`${url}: ${response.status}`);
-  return untar(gunzipSync(Buffer.from(await response.arrayBuffer())), 'package/dist/index.js');
+const tarballs = new Map();
+
+// Reads a file from a published npm package, for example packageFile(SDK, '0.0.16', 'dist/index.d.ts').
+export async function packageFile(pkg, version, file) {
+  const url = `https://registry.npmjs.org/${pkg}/-/${pkg.split('/').pop()}-${version}.tgz`;
+  if (!tarballs.has(url)) {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`${url}: ${response.status}`);
+    tarballs.set(url, gunzipSync(Buffer.from(await response.arrayBuffer())));
+  }
+  return untar(tarballs.get(url), `package/${file}`);
 }
+
+// The SDK's ES module build, fetched from the npm registry.
+export const sdkSource = version => packageFile(SDK, version, 'dist/index.js');

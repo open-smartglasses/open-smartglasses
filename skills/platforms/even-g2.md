@@ -35,6 +35,7 @@ Open [compatibility records](../../data/records) for Even G2. Each says how far 
 <!-- generated:notes-even-g2 -->
 - **The background-state skill imports two functions the SDK does not export.** Do not apply the skill. Save state with bridge.setLocalStorage and restore it on launch. ([record](../../data/records/even-g2/background-state-skill-missing-api.json), runtime)
 - **The CLI has no non-interactive login; CI must reuse a copied session.** Store credentials.yaml as a CI secret under a job-owned XDG_CONFIG_HOME, delete the local copy after the job, and never run evenhub logout in CI. ([record](../../data/records/even-g2/cli-login-interactive-only.json), reported)
+- **Official examples declare a min_sdk_version below the store floor, and the CLI packs it.** Set min_sdk_version to the store floor or later and rename the app before submitting. osg-lint --device even-g2 --manifest app.json checks both. ([record](../../data/records/even-g2/examples-declare-sdk-below-store-floor.json), runtime)
 - **After the exit dialog appears, image updates fail until the app is relaunched.** Reach the dialog only from an explicit Exit item in an in-app menu, the Chess pattern the guidelines accept, and fall back to text after repeated sendFailed. Mode 0 behind a custom confirmation avoids it, but review rejects that on the root page. ([record](../../data/records/even-g2/exit-dialog-breaks-image-updates.json), reported)
 - **After the exit dialog appears, the microphone will not open until the app is relaunched.** Reach the dialog only from an explicit Exit item in an in-app menu. When audioControl(true) keeps returning false, ask the user to relaunch the app. ([record](../../data/records/even-g2/exit-dialog-stops-microphone.json), reported)
 - **Hot reload leaves a blank display: createStartUpPageContainer returns 1.** Relaunch the simulator or the app after each edit, or call rebuildPageContainer when createStartUpPageContainer returns 1 and check that result too. ([record](../../data/records/even-g2/hot-reload-blank-display.json), simulator)
@@ -52,7 +53,9 @@ Open [compatibility records](../../data/records) for Even G2. Each says how far 
 ## Check
 
 ```bash
-node packages/lint/bin/osg-lint.js <url of the app> --device even-g2
+node packages/lint/bin/osg-lint.js <url of the app> --device even-g2 --manifest app.json
 ```
 
-The lint loads the app with a stand-in for the Even host and checks the page it builds while loading. It does not send gestures, so pages reached later are not checked.
+The lint loads the app with a stand-in for the Even host and checks the page it builds while loading. Then it taps the event container: once as the glasses send a tap, and in the forms apps often expect. An app that answers only the latter is reported. The taps reach the app, so run it on a local build or with a test backend, or pass `--no-taps`. Pages reached after a tap are not checked.
+
+`--manifest` checks `app.json` for what `evenhub pack` lets through and the review rejects: a `min_sdk_version` below the floor, "Even" in the name, a network permission with no whitelist.

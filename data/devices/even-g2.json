@@ -143,5 +143,28 @@
       "source": "https://hub.evenrealities.com/docs/get-started/overview",
       "checked": "2026-11-12"
     }
+  },
+  "store": {
+    "minSdkVersion": {
+      "value": "0.0.14",
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/ship/app-submission",
+      "checked": "2026-11-17",
+      "note": "Lowest min_sdk_version the review accepts in app.json. evenhub pack does not check it (CLI 0.2.0)."
+    },
+    "reservedName": {
+      "value": "Even",
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/ship/app-submission",
+      "checked": "2026-11-17",
+      "note": "A name containing it in any case is rejected, except for officially affiliated apps with written approval."
+    },
+    "networkWhitelist": {
+      "value": true,
+      "grade": "docs",
+      "source": "https://hub.evenrealities.com/docs/ship/app-submission",
+      "checked": "2026-11-17",
+      "note": "A network permission needs a whitelist. The packaging page (https://hub.evenrealities.com/docs/ship/packaging) calls it optional."
+    }
   }
 }

@@ -16,7 +16,7 @@ It checks Meta Ray-Ban Display web apps and Even G2 apps built on Even Hub. It n
 git clone https://github.com/open-smartglasses/open-smartglasses
 cd open-smartglasses && npm install
 node packages/lint/bin/osg-lint.js https://your-app.example
-node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2
+node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2 --manifest app.json
 ```
 
 ```
@@ -27,7 +27,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 
 Each finding says where its threshold comes from: a vendor rule, a value derived from vendor guidance, or a project rule. Add `--json` for machine-readable output. The exit code is 1 when an error-level rule fails.
 
-For Meta Ray-Ban Display it renders the first screen and runs 15 rules for text, color, layout and input. For Even G2 it stands in for the Even host, records the page the app builds, and runs 9 rules for the limits of that page. The [guidelines](./guidelines) explain each one and give its source.
+For Meta Ray-Ban Display it renders the first screen and runs 15 rules for text, color, layout and input. For Even G2 it stands in for the Even host, records the page the app builds, and runs 9 rules for the limits of that page. It then taps the app in the form the glasses send and in the forms apps often expect, and reports an app that answers only the wrong ones. Run it on a local build or with a test backend: the taps reach the app. `--manifest` checks `app.json` against the store rules that `evenhub pack` does not check. The [guidelines](./guidelines) explain each one and give its source.
 
 ## Use with a coding agent
 

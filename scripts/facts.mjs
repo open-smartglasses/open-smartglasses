@@ -55,7 +55,7 @@ const seenWith = versions =>
   Object.entries(versions ?? {})
     .map(([k, v]) => (versionNames[k] ? `${versionNames[k]} ${v}` : v))
     .join(', ');
-const currentSdk = device => watch.sources.find(s => s.type === 'npm' && s.profiles.includes(device))?.seen;
+const currentSdk = device => watch.sources.find(s => s.kind === 'sdk' && s.profiles.includes(device))?.seen;
 
 function evidenceLabel(record) {
   if (record.kind === 'question') return '';

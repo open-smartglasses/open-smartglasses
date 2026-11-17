@@ -1,0 +1,20 @@
+{
+  "package_id": "com.example.trains",
+  "edition": "202601",
+  "name": "Next Train",
+  "version": "0.1.0",
+  "min_sdk_version": "0.0.16",
+  "entrypoint": "index.html",
+  "permissions": [
+    {
+      "name": "network",
+      "desc": "Fetches departures.",
+      "whitelist": [
+        "https://api.example.com"
+      ]
+    }
+  ],
+  "supported_languages": [
+    "en"
+  ]
+}

@@ -52,6 +52,7 @@ The lint prints the grade of the fact behind each finding. A rule that needs an 
 | `input` | Gestures, the events they arrive as, what the system reserves |
 | `limits` | Hard limits of the runtime |
 | `hardware` | Sensors and outputs an app can or cannot count on |
+| `store` | Rules the vendor's store review applies to a submitted app |
 
 ## Changing a fact
 

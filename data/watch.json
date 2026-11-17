@@ -3,16 +3,107 @@
   "sources": [
     {
       "type": "npm",
+      "kind": "sdk",
       "package": "@evenrealities/even_hub_sdk",
-      "profiles": ["even-g2"],
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "Even G2 facts in data/devices/even-g2.json and the records in data/records/even-g2 were checked against this SDK.",
       "seen": "0.0.16"
+    },
+    {
+      "type": "npm",
+      "package": "@evenrealities/evenhub-cli",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "The manifest check leaves to evenhub pack what the CLI validates. See the store notes in data/devices/even-g2.json and data/records/even-g2/examples-declare-sdk-below-store-floor.json.",
+      "seen": "0.2.0"
+    },
+    {
+      "type": "npm",
+      "package": "@evenrealities/evenhub-simulator",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "Simulator evidence in data/records/even-g2 was gathered with this simulator. Rerun scripts/probes/even-simulator.mjs.",
+      "seen": "0.9.5"
+    },
+    {
+      "type": "github",
+      "repo": "even-realities/evenhub-templates",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "The official templates are cited in data/records/even-g2. Lint the changed templates with --manifest and check the records that cite them.",
+      "seen": "8cb01354f5ee914c5fab97d06e6d13b28eeb5815"
+    },
+    {
+      "type": "github",
+      "repo": "even-realities/everything-evenhub",
+      "path": "plugins/everything-evenhub/skills",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "The official Even skills are cited in data/records/even-g2. Check the records that cite a changed skill.",
+      "seen": "f10f12f53206dfe19edbf00f6f8f47f1c7672dc8"
+    },
+    {
+      "type": "page",
+      "url": "https://hub.evenrealities.com/docs/ship/app-submission",
+      "pattern": "Last updated:</strong> (\\d{4}-\\d{2}-\\d{2})",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "The store rules in data/devices/even-g2.json come from this page.",
+      "seen": "2026-10-09"
+    },
+    {
+      "type": "page",
+      "url": "https://hub.evenrealities.com/docs/ship/packaging",
+      "pattern": "Last updated:</strong> (\\d{4}-\\d{2}-\\d{2})",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "The manifest format and the network whitelist note in data/devices/even-g2.json come from this page.",
+      "seen": "2026-08-29"
+    },
+    {
+      "type": "imports",
+      "repo": "even-realities/everything-evenhub",
+      "path": "plugins/everything-evenhub/skills",
+      "package": "@evenrealities/even_hub_sdk",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "An official skill that imports a name the SDK does not export produces an app that does not build. See data/records/even-g2/background-state-skill-missing-api.json.",
+      "seen": {
+        "background-state/SKILL.md": [
+          "onBackgroundRestore",
+          "setBackgroundState"
+        ]
+      }
+    },
+    {
+      "type": "probe",
+      "script": "scripts/probes/even-sdk-timers.mjs",
+      "package": "@evenrealities/even_hub_sdk",
+      "field": "reproduced",
+      "profiles": [
+        "even-g2"
+      ],
+      "why": "The timer probe for data/records/even-g2/sdk-timer-id-collision.json, run on the latest SDK. A change means the record needs new evidence, or fixedIn.",
+      "seen": true
     },
     {
       "type": "github",
       "repo": "meta/meta-wearables-webapp",
       "path": "AGENTS.md",
-      "profiles": ["mrbd"],
-      "seen": "f39fa1ce687015e25f68a9b82791447d88ba584f"
+      "profiles": [
+        "mrbd"
+      ],
+      "why": "Meta Ray-Ban Display facts in data/devices/mrbd.json come from this file.",
+      "seen": "5c97a1a295a1dcde99cb8147650e9e69886407cd"
     }
   ]
 }

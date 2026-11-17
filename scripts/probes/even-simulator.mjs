@@ -5,7 +5,7 @@
 //   hot-reload-blank-display
 //     creating the page again in the same launch and after a reload
 //
-//   node scripts/probes/even-simulator.mjs --simulator <path to evenhub-simulator binary> [--sdk 0.0.16] [--reloads 3]
+//   node scripts/probes/even-simulator.mjs --simulator <path to evenhub-simulator binary> [--sdk 0.0.16] [--reloads 3] [--container text|list]
 //
 // The simulator opens a window. Install it with: npm install @evenrealities/evenhub-simulator
 import { createServer } from 'node:http';
@@ -16,6 +16,7 @@ const args = process.argv.slice(2);
 const simulator = args.includes('--simulator') ? args[args.indexOf('--simulator') + 1] : 'evenhub-simulator';
 const version = sdkVersion(args);
 const RELOADS = args.includes('--reloads') ? Number(args[args.indexOf('--reloads') + 1]) : 3;
+const CONTAINER = args.includes('--container') ? args[args.indexOf('--container') + 1] : 'text';
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 // Every line the app logs starts with "osg " and carries JSON.
@@ -37,11 +38,10 @@ const app = `<!doctype html>
 
   const load = Number(sessionStorage.getItem('osg-load') || 0) + 1;
   sessionStorage.setItem('osg-load', String(load));
-  const page = n => ({
-    containerTotalNum: 1,
-    textObject: [{ xPosition: 0, yPosition: 0, width: 576, height: 288, containerID: 1, containerName: 'probe',
-      content: 'load ' + load + ' ' + n, isEventCapture: 1 }],
-  });
+  const box = { xPosition: 0, yPosition: 0, width: 576, height: 288, containerID: 1, containerName: 'probe', isEventCapture: 1 };
+  const page = n => ${JSON.stringify(CONTAINER)} === 'list'
+    ? { containerTotalNum: 1, listObject: [{ ...box, itemContainer: { itemCount: 3, itemName: ['load ' + load + ' ' + n, 'two', 'three'] } }] }
+    : { containerTotalNum: 1, textObject: [{ ...box, content: 'load ' + load + ' ' + n }] };
 
   log('create', { load, result: await bridge.createStartUpPageContainer(page('create')) });
   if (load === 1) log('create-again', { load, result: await bridge.createStartUpPageContainer(page('again')) });

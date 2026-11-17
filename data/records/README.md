@@ -45,6 +45,7 @@ Scripts in [`scripts/probes`](../../scripts/probes) reproduce records. Each reco
 | [The CLI has no non-interactive login; CI must reuse a copied session](./even-g2/cli-login-interactive-only.json) | Documented, easy to miss | reported |  |  |
 | [How long does the display stay on with no input?](./even-g2/display-timeout-without-input.json) | Open question |  |  |  |
 | [Do input events reach an app while the phone is locked?](./even-g2/events-while-phone-locked.json) | Open question |  |  |  |
+| [Official examples declare a min_sdk_version below the store floor, and the CLI packs it](./even-g2/examples-declare-sdk-below-store-floor.json) | Docs disagree | runtime | CLI 0.2.0, Windows 11 |  |
 | [After the exit dialog appears, image updates fail until the app is relaunched](./even-g2/exit-dialog-breaks-image-updates.json) | Undocumented | reported | SDK 0.0.14, CLI 0.1.12 | Recheck: last seen on SDK 0.0.14, current 0.0.16 |
 | [After the exit dialog appears, the microphone will not open until the app is relaunched](./even-g2/exit-dialog-stops-microphone.json) | Undocumented | reported | SDK 0.0.14, iOS | Recheck: last seen on SDK 0.0.14, current 0.0.16 |
 | [Can a wearer tell all 16 grey levels apart?](./even-g2/grey-levels-distinguishable.json) | Open question |  |  |  |
@@ -71,6 +72,10 @@ Scripts in [`scripts/probes`](../../scripts/probes) reproduce records. Each reco
 | [The simulator QA Test wants width=600 in the viewport meta; the docs say device-width](./mrbd/qa-test-viewport-600.json) | Docs disagree | reported | simulator 0.6.0, toolkit 129.0.0, Chrome, macOS |  |
 | [WebMCP tools register, but Meta AI never calls them](./mrbd/webmcp-tools-never-invoked.json) | Undocumented | reported | firmware 130.0.1.241.221, app 298.0.0.28.160, Android 16, Chrome 154.0.8037.92 WebView |  |
 <!-- /generated -->
+
+## Checks built on records
+
+The lint cites a record when a finding rests on it. `input/tap-form` taps an Even Hub app in the form the host sends and in the forms apps expect, from [`tap-has-no-event-type`](./even-g2/tap-has-no-event-type.json) and [`quickstart-reads-taps-from-text-event`](./even-g2/quickstart-reads-taps-from-text-event.json).
 
 ## Adding a record
 

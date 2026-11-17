@@ -17,6 +17,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+      # The timer probe runs the latest SDK in Chromium.
+      - run: npm ci
+      - run: npx playwright-core install --with-deps chromium
       - run: node scripts/watch.mjs --issues
         env:
           GH_TOKEN: ${{ github.token }}

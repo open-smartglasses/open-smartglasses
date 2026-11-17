@@ -3,10 +3,11 @@ const BASIS = {
   vendor: 'vendor rule',
   derived: 'derived from vendor guidance',
   project: 'project rule',
+  record: 'compatibility record',
 };
 
 export function format(result, { maxNodes = 5 } = {}) {
-  const lines = [result.url, `device: ${result.device} (${result.viewport.join('x')})`, ''];
+  const lines = [result.url ?? result.manifest, `device: ${result.device}${result.viewport ? ` (${result.viewport.join('x')})` : ''}`, ''];
 
   for (const f of result.findings) {
     lines.push(`${LABEL[f.severity]}  ${f.rule}  ${f.message}`);

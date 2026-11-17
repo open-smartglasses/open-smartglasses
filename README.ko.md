@@ -16,7 +16,7 @@ Meta Ray-Ban Display 웹 앱과 Even Hub로 만든 Even G2 앱을 검사한다. 
 git clone https://github.com/open-smartglasses/open-smartglasses
 cd open-smartglasses && npm install
 node packages/lint/bin/osg-lint.js https://your-app.example
-node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2
+node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2 --manifest app.json
 ```
 
 ```
@@ -27,7 +27,7 @@ error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Di
 
 결과마다 기준의 출처가 붙는다. 벤더 규칙, 벤더 지침에서 유도한 값, 프로젝트 규칙 중 하나다. `--json`을 붙이면 기계가 읽는 형식으로 나온다. error 등급 규칙에 걸리면 종료 코드가 1이다.
 
-Meta Ray-Ban Display는 첫 화면을 렌더링해 글자, 색, 레이아웃, 입력 규칙 15개를 돌린다. Even G2는 Even 호스트를 대신해 앱이 만드는 페이지를 기록하고, 그 페이지의 제한을 보는 규칙 9개를 돌린다. 규칙마다 설명과 출처는 [지침](./guidelines)에 있다(영어).
+Meta Ray-Ban Display는 첫 화면을 렌더링해 글자, 색, 레이아웃, 입력 규칙 15개를 돌린다. Even G2는 Even 호스트를 대신해 앱이 만드는 페이지를 기록하고, 그 페이지의 제한을 보는 규칙 9개를 돌린다. 이어서 안경이 보내는 형태와 앱이 흔히 기대하는 형태로 탭을 보내, 틀린 형태에만 반응하는 앱을 보고한다. 탭이 실제로 앱에 들어가므로 로컬 빌드나 시험용 백엔드에서 돌린다. `--manifest`는 `evenhub pack`이 보지 않는 스토어 규칙에 맞춰 `app.json`을 검사한다. 규칙마다 설명과 출처는 [지침](./guidelines)에 있다(영어).
 
 ## 코딩 에이전트와 쓰기
 

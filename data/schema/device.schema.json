@@ -30,7 +30,8 @@
     "text": { "$ref": "#/$defs/group", "description": "Text minimums the vendor states, in the unit the vendor uses." },
     "input": { "$ref": "#/$defs/group", "description": "Gestures, the events they arrive as, and what the system reserves." },
     "limits": { "$ref": "#/$defs/group", "description": "Hard limits of the runtime." },
-    "hardware": { "$ref": "#/$defs/group", "description": "Sensors and outputs an app can or cannot count on." }
+    "hardware": { "$ref": "#/$defs/group", "description": "Sensors and outputs an app can or cannot count on." },
+    "store": { "$ref": "#/$defs/group", "description": "Rules the vendor's store review applies to a submitted app." }
   },
   "$defs": {
     "group": {

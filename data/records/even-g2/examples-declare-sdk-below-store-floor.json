@@ -1,0 +1,26 @@
+{
+  "id": "examples-declare-sdk-below-store-floor",
+  "device": "even-g2",
+  "title": "Official examples declare a min_sdk_version below the store floor, and the CLI packs it",
+  "kind": "contradiction",
+  "claim": "The App Submission & QA Guidelines require min_sdk_version in app.json and give the current floor as 0.0.14. The four official templates in evenhub-templates declare 0.0.10, the quickstart skill tells agents to use 0.0.12, and the example on the packaging page uses 0.0.7.",
+  "actual": "evenhub pack packs a manifest with min_sdk_version 0.0.10 and gives no warning about it, while it rejects other review items such as a name over 20 characters. The templates' names also contain \"Even\", which the guidelines say is rejected automatically, and pack accepts that too.",
+  "impact": "An app started from an official template or the quickstart skill packs cleanly and meets the floor only at review.",
+  "workaround": "Set min_sdk_version to the store floor or later and rename the app before submitting. osg-lint --device even-g2 --manifest app.json checks both.",
+  "repro": "Run evenhub pack app.json dist on the minimal template's app.json.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/ship/app-submission",
+    "https://hub.evenrealities.com/docs/ship/packaging",
+    "https://github.com/even-realities/evenhub-templates/blob/8cb01354f5ee914c5fab97d06e6d13b28eeb5815/minimal/app.json",
+    "https://github.com/even-realities/everything-evenhub/blob/614953ce2c2bc1e1ad52ff70ff6034d29d0005ff/plugins/everything-evenhub/skills/quickstart/SKILL.md"
+  ],
+  "evidence": [
+    {
+      "level": "runtime",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": { "cli": "0.2.0", "os": "Windows 11" },
+      "note": "The minimal template's app.json packed with only a warning that min_app_version 2.0.0 was raised to 2.2.10. The same file with a 26-character name was rejected."
+    }
+  ]
+}

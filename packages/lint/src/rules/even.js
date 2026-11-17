@@ -1,10 +1,17 @@
 import { SNAP_DESIGN } from '../sources.js';
 import { utf8Bytes } from '../capture-even.js';
+import { loadRecord } from '../records.js';
 
 const CHOICE_LIMIT = 7;
 const BYTES_HINT = 'Text is counted in UTF-8 bytes: Korean, Japanese and Chinese characters take 3 each.';
 const label = c => ({ selector: `${c.kind} "${c.name || c.id}"`, text: c.content ?? '' });
 const short = s => (s.length > 40 ? `${s.slice(0, 40)}…` : s);
+
+// A finding backed by a compatibility record in data/records.
+const fromRecord = (id, message) => {
+  const record = loadRecord('even-g2', id);
+  return { severity: 'warn', basis: 'record', message, source: record.url, grade: record.level };
+};
 
 // A finding backed by a fact in the device profile.
 const vendor = (fact, message, nodes) => ({
@@ -183,10 +190,41 @@ export const manyChoices = {
   },
 };
 
+// Taps were sent to the app in more than one form (see capture-even.js). An app that answers
+// a form the host does not send, and not the form it does send, ignores taps on the glasses.
+// An app that answers no form is not reported: it may have nothing to do on a tap.
+export const tapForm = {
+  id: 'input/tap-form',
+  run({ page }) {
+    const taps = page.taps;
+    if (!taps || taps.answers.device) return [];
+    const findings = [];
+    if (taps.answers.typed) {
+      findings.push(
+        fromRecord(
+          'tap-has-no-event-type',
+          taps.container === 'list'
+            ? 'The app answers a list tap only when the event carries eventType 0 and the item index. The host leaves both out on the first item, so taps do nothing. Read eventType ?? 0 and currentSelectItemIndex ?? 0.'
+            : 'The app answers a tap only when sysEvent carries eventType 0. The host leaves eventType out of a single tap, so taps do nothing. Read event.sysEvent ? (event.sysEvent.eventType ?? 0) : null.',
+        ),
+      );
+    }
+    if (taps.answers.text) {
+      findings.push(
+        fromRecord(
+          'quickstart-reads-taps-from-text-event',
+          'The app answers a tap only when it arrives as a textEvent. In the simulator and in one hardware report a tap on a text container arrives as a sysEvent, so taps do nothing. Read taps from sysEvent too.',
+        ),
+      );
+    }
+    return findings;
+  },
+};
+
 // The rules after the first need a page.
 const needsPage = rule => ({ id: rule.id, run: ctx => (ctx.page.containers ? rule.run(ctx) : []) });
 
 export default [
   noPage,
-  ...[containerCount, containerBounds, imageSize, containerName, eventCapture, listLength, textLength, manyChoices].map(needsPage),
+  ...[containerCount, containerBounds, imageSize, containerName, eventCapture, tapForm, listLength, textLength, manyChoices].map(needsPage),
 ];

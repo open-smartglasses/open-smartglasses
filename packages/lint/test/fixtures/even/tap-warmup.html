@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>tap warmup</title>
+<script>
+  // Sends what the Even Hub SDK sends to its host.
+  const send = (method, data) =>
+    window.flutter_inappwebview.callHandler('evenAppMessage', JSON.stringify({ type: 'call_even_app_method', method, data }));
+  // What the SDK does with a host message: hands the app one envelope per event.
+  const listen = handler => {
+    window._listenEvenAppMessage = raw => {
+      const [kind, data] = JSON.parse(raw).data;
+      handler({ [kind]: data });
+    };
+  };
+  send('createStartUpPageContainer', {"containerTotalNum": 1, "textObject": [{"xPosition": 0, "yPosition": 0, "width": 576, "height": 288, "containerID": 1, "containerName": "main", "content": "Taps: 0", "isEventCapture": 1}]});
+  let taps = 0;
+  const count = () => send('textContainerUpgrade', { containerID: 1, containerName: 'main', content: 'Taps: ' + ++taps });
+  // Ignores the first event it gets, then counts every tap.
+  let events = 0;
+  listen(event => {
+    if (events++ === 0) return;
+    if (event.sysEvent || event.textEvent) count();
+  });
+</script>
