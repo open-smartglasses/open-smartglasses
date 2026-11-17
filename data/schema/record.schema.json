@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/open-smartglasses/open-smartglasses/data/schema/record.schema.json",
+  "title": "Compatibility record",
+  "description": "One place where an app can break on a device: where official material is wrong, silent, or easy to miss.",
+  "type": "object",
+  "required": ["id", "device", "title", "kind", "claim", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "description": "Same as the file name without .json.",
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "device": { "description": "A profile id in data/devices.", "type": "string" },
+    "title": { "description": "One line. What goes wrong.", "type": "string", "minLength": 1, "maxLength": 100 },
+    "kind": {
+      "description": "contradiction: official material disagrees with the device or with other official material. undocumented: behaviour no official material mentions. documented-limit: stated by the vendor, and easy to miss. question: not known yet.",
+      "enum": ["contradiction", "undocumented", "documented-limit", "question"]
+    },
+    "claim": {
+      "description": "What official material says. If it says nothing, what an app would reasonably assume. For a question, the question.",
+      "type": "string",
+      "minLength": 1
+    },
+    "actual": { "description": "What happens instead. Not used for a question.", "type": "string", "minLength": 1 },
+    "impact": { "description": "What the user or the developer sees.", "type": "string" },
+    "workaround": { "type": "string" },
+    "repro": { "description": "Steps or minimal code, or the path of a probe in this repository.", "type": "string" },
+    "docs": {
+      "description": "Official material the record is about.",
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "links": {
+      "description": "Discussion that is not evidence, such as where a question was asked.",
+      "type": "array",
+      "items": { "type": "string", "format": "uri" }
+    },
+    "disputed": { "description": "Reports disagree on what happens.", "type": "boolean" },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "fixedIn": {
+      "description": "The release that fixed it. Records are kept after a fix: apps on older releases still meet it.",
+      "type": "object",
+      "required": ["versions", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "versions": { "$ref": "#/$defs/versions" },
+        "date": { "$ref": "#/$defs/date" },
+        "source": { "type": "string", "format": "uri" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "question" } } },
+      "then": { "not": { "required": ["actual"] } },
+      "else": { "required": ["actual"], "properties": { "evidence": { "type": "array", "minItems": 1 } } }
+    }
+  ],
+  "$defs": {
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "versions": {
+      "description": "Versions in effect when the behaviour was seen. Leave out what is not known.",
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "enum": ["sdk", "cli", "simulator", "app", "firmware", "os", "browser", "toolkit"] },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["level", "result", "date"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "description": "reported: someone else's report, linked. runtime: reproduced here in a browser or Node. simulator: reproduced here in the vendor simulator. hardware: reproduced here on the device.",
+          "enum": ["reported", "runtime", "simulator", "hardware"]
+        },
+        "result": { "enum": ["reproduced", "not-reproduced"] },
+        "date": { "$ref": "#/$defs/date", "description": "When it was seen, not when it was written down." },
+        "versions": { "$ref": "#/$defs/versions" },
+        "source": { "description": "A URL, or a path in this repository.", "type": "string", "minLength": 1 },
+        "note": { "type": "string" }
+      },
+      "if": { "properties": { "level": { "const": "reported" } } },
+      "then": { "required": ["source"], "properties": { "source": { "type": "string", "format": "uri" } } }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "simulator-allows-extra-image-containers",
+  "device": "even-g2",
+  "title": "The simulator draws more image containers than the glasses show",
+  "kind": "contradiction",
+  "claim": "The display page allows at most 4 image containers per page. The official simulator, meant for checking layouts before hardware, draws more.",
+  "actual": "One developer reports that the glasses show at most 4 image containers at once, while the simulator showed about 6. A layout that works in the simulator breaks on the glasses. The report gives no versions.",
+  "impact": "Image-heavy layouts pass simulator testing and fail on hardware.",
+  "workaround": "Keep to 4 image containers per page whatever the simulator shows.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/build/display"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-06-13",
+      "source": "https://dev.to/yokomachi/got-an-even-g2-build-your-own-apps-hands-on-impressions-and-dev-tips-1glp",
+      "note": "Observed while building three apps, as of June 2026."
+    }
+  ]
+}

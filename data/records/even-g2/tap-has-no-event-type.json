@@ -1,0 +1,61 @@
+{
+  "id": "tap-has-no-event-type",
+  "device": "even-g2",
+  "title": "A single tap arrives with no eventType, so === CLICK_EVENT never matches",
+  "kind": "documented-limit",
+  "claim": "The handle-input skill says a single press arrives as a sysEvent whose eventType is undefined, because protobuf omits the zero value, and tells apps to compare eventType ?? 0. The Your First App page handles both CLICK_EVENT and undefined.",
+  "actual": "On simulator 0.9.5 and on G2 hardware, a single tap delivers a sysEvent whose whole payload is { eventSource: 1 }. The eventType key is missing, and CLICK_EVENT is 0, so eventType === OsEventTypeList.CLICK_EVENT is never true. A double tap carries eventType 3 as expected. All four official templates in evenhub-templates coalesced the missing field to null and never fired on a tap, until a merged change on 2026-08-07 made them coalesce to 0 when the envelope is present. The SDK behaviour is unchanged.",
+  "impact": "Tap handlers that compare against CLICK_EVENT silently never run. Apps scaffolded from the templates before 2026-08-07 still carry the bug.",
+  "workaround": "Coalesce only when the envelope exists: event.sysEvent ? (event.sysEvent.eventType ?? 0) : null. Coalescing the optional chain (event.sysEvent?.eventType ?? 0) turns every other event into a tap.",
+  "docs": [
+    "https://github.com/even-realities/everything-evenhub/blob/main/plugins/everything-evenhub/skills/handle-input/SKILL.md",
+    "https://hub.evenrealities.com/docs/get-started/quickstart/first-app"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-07-05",
+      "source": "https://github.com/even-realities/evenhub-templates/pull/2",
+      "note": "Taps were dead in the text-heavy template; the fix was checked in the simulator. Merged 2026-08-07 for all four templates."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-02",
+      "versions": {
+        "sdk": "0.0.14",
+        "simulator": "0.9.5",
+        "app": "2.2.10",
+        "os": "iOS"
+      },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/31",
+      "note": "Simulator and G2 hardware."
+    },
+    {
+      "level": "simulator",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.16",
+        "simulator": "0.9.5",
+        "os": "Windows 11"
+      },
+      "source": "scripts/probes/even-simulator.mjs",
+      "note": "Raw host message for a click: {\"type\":\"ListenEvenAppData\",\"method\":\"evenHubEvent\",\"data\":[\"sysEvent\",{\"eventSource\":1}]}. A double click carries eventType 3."
+    },
+    {
+      "level": "simulator",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.14",
+        "simulator": "0.9.5",
+        "os": "Windows 11"
+      },
+      "source": "scripts/probes/even-simulator.mjs",
+      "note": "Same messages as on 0.0.16."
+    }
+  ],
+  "repro": "scripts/probes/even-simulator.mjs"
+}

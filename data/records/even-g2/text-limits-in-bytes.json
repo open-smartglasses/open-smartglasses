@@ -1,0 +1,24 @@
+{
+  "id": "text-limits-in-bytes",
+  "device": "even-g2",
+  "title": "Text limits are UTF-8 bytes, one below the documented character counts",
+  "kind": "contradiction",
+  "claim": "The display page gives text limits in characters: 64 per list item, and 1,000 per text container on create or rebuild. The docs changelog gives them in bytes: simulator 0.7.1 adds a 999-byte text container limit as a firmware-matching fix, and simulator 0.7.3 caps list items at 63 bytes.",
+  "actual": "The caps count UTF-8 bytes. A report from analysis of stock firmware 2.2.6.10 finds the text buffers hold 999 bytes on create and 1,999 bytes on a text update, against 1,000 and 2,000 characters in the docs. Korean, Chinese and Japanese take 3 bytes per character, so a text container holds 333 of them, not 1,000, and a list item 21, not 64.",
+  "impact": "Text sized by character count can run past the cap. Non-Latin text reaches it at about a third of the documented length.",
+  "workaround": "Count UTF-8 bytes (new TextEncoder().encode(text).length): at most 999 per text container, 1,999 per text update and 63 per list item.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/build/display",
+    "https://hub.evenrealities.com/docs/reference/changelog"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-11-11",
+      "versions": { "firmware": "2.2.6.10" },
+      "source": "https://github.com/kalanihelekunihi/evenRealities-openCFW/blob/main/evenhub/docs/REFERENCES-NOTES.md",
+      "note": "From the firmware's char[1000] and char[2000] text buffers. Covers text containers, not list items."
+    }
+  ]
+}

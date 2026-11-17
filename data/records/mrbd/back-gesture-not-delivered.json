@@ -1,0 +1,35 @@
+{
+  "id": "back-gesture-not-delivered",
+  "device": "mrbd",
+  "title": "The Back gesture did not reach web apps before glasses release 125.1",
+  "kind": "contradiction",
+  "claim": "In June 2026 the official create-webapp skill mapped Back to Escape, and its template app.js navigated back on an Escape keydown.",
+  "actual": "Before glasses release 125.1, Back never reached the page: the system's web app management screen opened instead, and neither an Escape keydown nor popstate fired. From 125.1, Back (middle finger and thumb tap) calls history.back() when the page has a previous history entry, so it arrives as popstate; with no entry it opens the native overlay. The input and navigation page now describes Back this way and does not mention Escape.",
+  "impact": "Apps that wait for Escape never see Back. Apps with no history entries cannot intercept it.",
+  "workaround": "Push a history entry for each screen Back should leave, and handle popstate.",
+  "docs": [
+    "https://wearables.developer.meta.com/docs/develop/webapps/build/input-and-navigation/",
+    "https://github.com/meta/meta-wearables-webapp/blob/ab7ba4e05379b5901f16c361470e6cd4f8e73924/plugins/meta-wearables-webapp/skills/create-webapp/SKILL.md"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-06-04",
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/12",
+      "note": "Listened for Escape keydown, as in the template, and for popstate."
+    },
+    {
+      "level": "reported",
+      "result": "not-reproduced",
+      "date": "2026-06-07",
+      "versions": { "firmware": "125.1" },
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/12#issuecomment-4643046187",
+      "note": "Same reporter after updating: Back arrives as popstate."
+    }
+  ],
+  "fixedIn": {
+    "versions": { "firmware": "125.1" },
+    "source": "https://github.com/meta/meta-wearables-webapp/issues/12#issuecomment-4672629673"
+  }
+}

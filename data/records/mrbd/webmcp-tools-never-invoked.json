@@ -1,0 +1,39 @@
+{
+  "id": "webmcp-tools-never-invoked",
+  "device": "mrbd",
+  "title": "WebMCP tools register, but Meta AI never calls them",
+  "kind": "undocumented",
+  "claim": "The WebMCP agent tools page says a Web App's tools reach Meta AI when the glasses are in Developer Mode or in the rollout, and that Meta AI offers them while the app is in front. It also says registerTool() and getTools() reflect only the page's own registry.",
+  "actual": "Three reports on glasses releases 129 and 130 show the page side working: document.modelContext is present, every registerTool() resolves and getTools() lists the tools. Meta AI never calls execute() and answers on its own instead; once it said \"One moment\" and then nothing. Meta's own Magic Ball sample fails the same way. The reports cover German (Switzerland), English (Netherlands) and English (US), all with Developer Mode on and the glasses and Meta AI app restarted. One report wrapped the host's invoke hooks and saw no call reach the page. Meta has not replied on any of the three.",
+  "impact": "Voice control through WebMCP does not work, and the page cannot tell whether the assistant received its tools. Developers rewrite tool names and descriptions for a cause they cannot change.",
+  "workaround": "Keep every tool action reachable by hand, as the page already requires, and do not rely on voice invocation.",
+  "docs": [
+    "https://wearables.developer.meta.com/docs/develop/webapps/agent-tools/"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-16",
+      "versions": { "firmware": "129.0.0.218.272", "app": "294.1.0.25.165", "os": "Android" },
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/31",
+      "note": "Meta AI language German (Switzerland), German speech. Six tools registered and listed; no callback across five sessions. Meta AI said it had no direct function for the request."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-25",
+      "versions": { "firmware": "129.0.0.218.272", "app": "295.0.0.37.164", "os": "Android" },
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/35",
+      "note": "Meta AI language English (Netherlands), in the Netherlands. Also fails with the official Magic Ball sample."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-11-15",
+      "versions": { "firmware": "130.0.1.241.221", "app": "298.0.0.28.160", "os": "Android 16", "browser": "Chrome 154.0.8037.92 WebView" },
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/37",
+      "note": "en-US, in the United States. A self-test through executeTool() resolved in 7-9 ms; the wrapped __webmcp_invoke was never called during spoken requests."
+    }
+  ]
+}

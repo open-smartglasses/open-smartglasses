@@ -1,0 +1,21 @@
+{
+  "id": "events-while-phone-locked",
+  "device": "even-g2",
+  "title": "Do input events reach an app while the phone is locked?",
+  "kind": "question",
+  "claim": "The App Submission & QA Guidelines expect a beta build's core flow to run on glasses and ring input with the phone locked, and say a QR sideload dies when its WebView goes to the background. Do input events reach the app while the phone is locked, on iOS and on Android, for each install type?",
+  "docs": [
+    "https://hub.evenrealities.com/docs/ship/app-submission",
+    "https://hub.evenrealities.com/docs/build/background-lifecycle"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-03",
+      "versions": { "sdk": "0.0.16", "os": "iOS" },
+      "source": "https://github.com/maticsh/matic-even/blob/main/docs/findings/lifecycle.md#h15",
+      "note": "A QR sideload ran 18 min with the iPhone locked: IMU samples kept arriving and 184 image sends, one every 5 s, all succeeded. Touch input was not reported. Android not tested."
+    }
+  ]
+}

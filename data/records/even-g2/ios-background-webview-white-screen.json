@@ -1,0 +1,24 @@
+{
+  "id": "ios-background-webview-white-screen",
+  "device": "even-g2",
+  "title": "On iOS a WebView killed in the background comes back as a white screen",
+  "kind": "contradiction",
+  "claim": "The Background & Lifecycle page says that on iOS the WKWebView keeps running while the Even app is in the background, in-memory JS state survives, and no special handling is needed.",
+  "actual": "With the Even app in the background and the phone under memory pressure, iOS ends the WebView content process while the Even app and the Bluetooth link stay up. The host does not reload the page: it stays white, temple taps go to the built-in dashboard, and only relaunching the app recovers it. The reporter's heartbeat logs show this several times a day of normal phone use on Even App 2.2.5. SDK 0.0.10 (2026-04-10) lists a stronger WebView background keep-alive; the report is later and does not give the app's SDK version.",
+  "impact": "The app disappears from the glasses and loses all in-memory state. Code in the page cannot detect or recover from it, because its process is gone.",
+  "workaround": "Save state with setLocalStorage as it changes and restore it on launch, so a relaunch resumes where the user left off.",
+  "repro": "Launch an app, put the Even app in the background, use a few memory-heavy apps for a while, then return to the Even app.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/build/background-lifecycle"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-07-09",
+      "versions": { "app": "2.2.5", "os": "iOS" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/16",
+      "note": "Sideloaded private build that streams the glasses microphone."
+    }
+  ]
+}

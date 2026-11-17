@@ -1,0 +1,31 @@
+{
+  "id": "missing-glyphs-dropped",
+  "device": "even-g2",
+  "title": "Characters outside the firmware font are dropped with no placeholder",
+  "kind": "documented-limit",
+  "claim": "The design-guidelines skill and the display page say the glasses have one font baked into firmware and that characters outside it are silently skipped. Neither lists which scripts the font covers.",
+  "actual": "Latin and CJK render; Japanese and Korean work. In simulator 0.9.5, Arabic, Gujarati and Hindi text is dropped and only the Latin label in the same container shows. Thai is dropped on the glasses, reported from the Translate feature. The first report also names Hebrew as missing, and Even support told it the glasses cannot show Gujarati.",
+  "impact": "Text in an unsupported script leaves a blank where it should be, with no placeholder and no fallback.",
+  "workaround": "Draw unsupported scripts on the phone and send them as images, within the limit of 4 image containers of 288 x 144 per page. Image containers do not scroll.",
+  "docs": [
+    "https://github.com/even-realities/everything-evenhub/blob/main/plugins/everything-evenhub/skills/design-guidelines/SKILL.md",
+    "https://hub.evenrealities.com/docs/build/display"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-05",
+      "versions": { "simulator": "0.9.5" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/37",
+      "note": "Probe with one script per text container: Latin and CJK render; Arabic, Gujarati and Hindi dropped."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-17",
+      "source": "https://github.com/even-realities/everything-evenhub/issues/37#issuecomment-5706862148",
+      "note": "Thai dropped with no fallback in Translate; Japanese and Korean work."
+    }
+  ]
+}

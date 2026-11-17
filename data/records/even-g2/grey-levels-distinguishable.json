@@ -1,0 +1,20 @@
+{
+  "id": "grey-levels-distinguishable",
+  "device": "even-g2",
+  "title": "Can a wearer tell all 16 grey levels apart?",
+  "kind": "question",
+  "claim": "The display page states 4-bit greyscale, 16 levels of green. Are all 16 levels distinguishable on the glasses?",
+  "docs": [
+    "https://hub.evenrealities.com/docs/build/display"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-03",
+      "versions": { "sdk": "0.0.16", "os": "iOS" },
+      "source": "https://github.com/maticsh/matic-even/blob/main/docs/findings/images.md#h3",
+      "note": "All 16 grey steps in a test PNG looked distinct, seen once. QR sideload, firmware not recorded. The same project finds the five text brightness levels (textColor 0-4) look alike: https://github.com/maticsh/matic-even/blob/main/docs/findings/display.md#h2"
+    }
+  ]
+}

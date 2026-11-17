@@ -1,0 +1,59 @@
+{
+  "id": "sdk-timer-id-collision",
+  "device": "even-g2",
+  "title": "Clearing a native timer can cancel an SDK timer",
+  "kind": "undocumented",
+  "claim": "Importing the SDK leaves timers working as in any web page.",
+  "actual": "Since SDK 0.0.10 the SDK replaces setTimeout, setInterval, clearTimeout and clearInterval with its own timers when it is imported. Its timer ids start at 1, like the browser's. clearTimeout or clearInterval with a native id cancels the SDK timer that has the same number, with no error.",
+  "impact": "A timer stops firing and nothing is logged. Code that took a timer before the SDK loaded can trigger it: a script tag before the bundle, a library that kept a reference to setTimeout, a browser extension during desktop testing.",
+  "workaround": "Keep a reference to the native setTimeout from a module evaluated before the SDK, or avoid clearing timers created before the SDK was imported.",
+  "repro": "scripts/probes/even-sdk-timers.mjs",
+  "docs": [
+    "https://www.npmjs.com/package/@evenrealities/even_hub_sdk"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-11-07",
+      "versions": {
+        "sdk": "0.0.16",
+        "browser": "desktop Chromium"
+      },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/47"
+    },
+    {
+      "level": "runtime",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.16",
+        "browser": "Chromium 157.0.8103.51"
+      },
+      "source": "scripts/probes/even-sdk-timers.mjs",
+      "note": "Also reproduced on every release from 0.0.10 to 0.0.15."
+    },
+    {
+      "level": "runtime",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.10",
+        "browser": "Chromium 157.0.8103.51"
+      },
+      "source": "scripts/probes/even-sdk-timers.mjs",
+      "note": "The first release that replaces the timers. Its changelog entry is \"Enhanced WebView background keep-alive\"."
+    },
+    {
+      "level": "runtime",
+      "result": "not-reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.9",
+        "browser": "Chromium 157.0.8103.51"
+      },
+      "source": "scripts/probes/even-sdk-timers.mjs",
+      "note": "Releases 0.0.3 to 0.0.9 leave the native timers in place."
+    }
+  ]
+}

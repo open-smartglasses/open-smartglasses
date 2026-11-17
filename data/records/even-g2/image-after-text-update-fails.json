@@ -1,0 +1,24 @@
+{
+  "id": "image-after-text-update-fails",
+  "device": "even-g2",
+  "title": "An image sent right after a text update fails with sendFailed",
+  "kind": "undocumented",
+  "claim": "The glasses-ui skill says to serialize all bridge calls, awaiting each before the next. Nothing official asks for a pause between a text update and an image send.",
+  "actual": "One report on SDK 0.0.11 sees updateImageRawData return sendFailed when it follows a textContainerUpgrade with no pause, although all calls already ran one at a time through a single promise chain. The reporter puts it down to Bluetooth contention. Waiting 500 ms after the last text update avoided it; no shorter pause was measured. SDK 0.0.14 added a 100 ms hold between image sends, per the display page and the docs changelog. Neither says whether the hold covers a text update followed by an image.",
+  "impact": "Apps that update text and images together lose some image frames, with no error beyond sendFailed.",
+  "workaround": "Wait about 500 ms after the last textContainerUpgrade before calling updateImageRawData.",
+  "docs": [
+    "https://github.com/even-realities/everything-evenhub/blob/main/plugins/everything-evenhub/skills/glasses-ui/SKILL.md",
+    "https://hub.evenrealities.com/docs/build/display"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-08-16",
+      "versions": { "sdk": "0.0.11", "firmware": "2.2.8.4", "os": "iOS 26.5.2" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/18#issuecomment-5305631708",
+      "note": "Stated in passing in a report on the exit dialog. Four text and two image containers, PNG payloads."
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "id": "exit-dialog-breaks-image-updates",
+  "device": "even-g2",
+  "title": "After the exit dialog appears, image updates fail until the app is relaunched",
+  "kind": "undocumented",
+  "claim": "Nothing official says the exit dialog affects other calls. The App Submission & QA Guidelines require a root-page double tap to call shutDownPageContainer(1), the system exit dialog, and reject mode 0 or a custom exit screen on the root page.",
+  "actual": "From the moment shutDownPageContainer(1) opens the dialog, every updateImageRawData returns sendFailed within a few milliseconds, for the rest of the launch, even when the user picks No. Text updates and input events keep working, and the glasses keep the last image frame. rebuildPageContainer returns true but does not clear it, and createStartUpPageContainer returns 1, also after a WebView reload. The system's own long-press exit dialog does the same when cancelled. Only relaunching the app restores images. Seen on SDK 0.0.11 to 0.0.14 and firmware 2.2.7.14 and 2.2.8.4, with different image formats, sizes and container counts.",
+  "impact": "Image-based apps freeze on their last frame once the user opens and cancels the exit dialog, which every store app must offer on the root page. A store review rejected one app for this symptom. Text-only apps do not notice.",
+  "workaround": "Reach the dialog only from an explicit Exit item in an in-app menu, the Chess pattern the guidelines accept, and fall back to text after repeated sendFailed. Mode 0 behind a custom confirmation avoids it, but review rejects that on the root page.",
+  "repro": "Update a text container and an image container on timers. Double tap to call shutDownPageContainer(1), choose No, and watch updateImageRawData return sendFailed from then on.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/ship/app-submission",
+    "https://hub.evenrealities.com/docs/build/page-lifecycle"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-07-21",
+      "versions": { "sdk": "0.0.12", "os": "iOS" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/18",
+      "note": "Raw gray4 image every 0.8 s; prototype mode and an installed .ehpk. Even App was the latest release on that date, number not given."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-07-31",
+      "versions": { "sdk": "0.0.13", "app": "2.2.7", "firmware": "2.2.7.14" },
+      "source": "https://github.com/nickustinov/even-g2-notes/blob/main/docs/page-lifecycle.md",
+      "note": "Image sends fail in 1-3 ms against 110-215 ms normally. A second createStartUpPageContainer blocked about 2.1 s and returned 1. Linked from issue 18 on 2026-08-06."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-08-16",
+      "versions": { "sdk": "0.0.11", "firmware": "2.2.8.4", "os": "iOS 26.5.2" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/18#issuecomment-5305631708",
+      "note": "Two PNG image containers sent on change, all calls serialized. location.reload() did not recover either."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-08-27",
+      "versions": { "sdk": "0.0.14" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/18#issuecomment-5433359714",
+      "note": "The host returned raw code 4, outside the documented 0-3 range; the SDK maps it to sendFailed."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-05",
+      "versions": { "sdk": "0.0.14", "cli": "0.1.12" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/18#issuecomment-5554945389",
+      "note": "Installed beta build, four 288x144 PNG tiles. Glasses connected and worn at the moment of failure. Store review rejected the app for the symptom."
+    }
+  ]
+}

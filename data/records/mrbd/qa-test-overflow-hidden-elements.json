@@ -1,0 +1,26 @@
+{
+  "id": "qa-test-overflow-hidden-elements",
+  "device": "mrbd",
+  "title": "The simulator QA overflow check flags hidden UI Toolkit elements",
+  "kind": "contradiction",
+  "claim": "The simulator's QA Test checks for horizontal overflow at 600x600. Meta's UI Toolkit keeps SubNavigationPager neighbour pages mounted beside the visible one, hidden and inert inside a clipping pager, and pads StaticContainer material canvases by 32 px, so with the documented 24 px content inset a full-width canvas spans -8 to 608 px.",
+  "actual": "The check fails any element under body whose right edge is past 601 px, including hidden, inert, transparent and ancestor-clipped elements. On a stock Toolkit app every pager tab except the last fails with \"div overflows right edge\", and a screen with a StaticContainer fails with \"canvas overflows right edge\", although nothing can scroll sideways. The Toolkit validator reports no findings and forbids restyling Toolkit internals, so the app cannot fix it.",
+  "impact": "Apps that use the Toolkit as documented fail the simulator's quality checklist.",
+  "workaround": "Treat these two findings as false positives after checking by hand that nothing scrolls sideways.",
+  "repro": "Initializer app with a SubNavigationPager of 3 items at the root route: run the QA Test on any tab but the last. Then a ScrollView with padding-inline var(--uit-spacing-large) holding one full-width StaticContainer.",
+  "docs": [
+    "https://wearables.developer.meta.com/docs/develop/webapps/test/",
+    "https://wearables.developer.meta.com/docs/develop/webapps/design/components/mrbd/sub-navigation-pager/",
+    "https://wearables.developer.meta.com/docs/develop/webapps/design/components/foundation/static-container/"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-13",
+      "versions": { "simulator": "0.6.0", "toolkit": "129.0.0", "browser": "Chrome", "os": "macOS" },
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/28",
+      "note": "Part 2 of the report."
+    }
+  ]
+}

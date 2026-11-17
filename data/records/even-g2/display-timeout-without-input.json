@@ -1,0 +1,11 @@
+{
+  "id": "display-timeout-without-input",
+  "device": "even-g2",
+  "title": "How long does the display stay on with no input?",
+  "kind": "question",
+  "claim": "No official page states a display timeout. How long does the display stay on while an app keeps updating it and the wearer gives no input, and can the app or the wearer change it?",
+  "evidence": [],
+  "links": [
+    "https://github.com/nickustinov/even-g2-notes/issues/4"
+  ]
+}

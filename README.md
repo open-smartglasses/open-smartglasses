@@ -48,6 +48,7 @@ The median body text size was 16px, the web default. Across all the apps that lo
 |---|---|
 | **[Guidelines](./guidelines)** | Text legibility, color on additive and monochrome displays, one-dimensional input, information per screen, privacy. Written in angular size, tone and seconds, so they hold across devices. |
 | **[Device profiles](./data)** | Display, input and runtime facts per device: Meta Ray-Ban Display, Even G2, Android XR. Each fact carries its source, the date it was checked, and a grade from `unknown` to `hardware`. |
+| **[Compatibility records](./data/records)** | Places where an app breaks on the device although official material says otherwise or says nothing. Each record links its reports and says how far it was reproduced here: in a browser, in the vendor simulator, or on the device. |
 | **Lint** | Renders an app headlessly and checks the screenshot against the guidelines. Structural checks run through one adapter per runtime. |
 | **[Agent skills](./skills)** | `hud-design` and `hud-review` for every platform, a short note per platform, and an `AGENTS.md` block. |
 | **[Evals](./evals)** | Tasks scored on the rendered result, with and without the skills. First run: 1 error and 8 warnings without, none with. |

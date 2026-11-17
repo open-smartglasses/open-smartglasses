@@ -1,0 +1,49 @@
+{
+  "id": "background-state-skill-missing-api",
+  "device": "even-g2",
+  "title": "The background-state skill imports two functions the SDK does not export",
+  "kind": "contradiction",
+  "claim": "The official background-state skill tells agents to import setBackgroundState and onBackgroundRestore from @evenrealities/even_hub_sdk. The SDK's published type definitions declare neither.",
+  "actual": "Neither function is in the published SDK. A July report found both missing from 0.0.10 and 0.0.11. Version 0.0.16, the current release, has neither in dist/index.d.ts or dist/index.js. TypeScript rejects the import, and a bundler or browser fails on a named import the module does not export.",
+  "impact": "An agent that applies the skill produces an app that does not build. Removing the calls leaves the app with no state persistence.",
+  "workaround": "Do not apply the skill. Save state with bridge.setLocalStorage and restore it on launch.",
+  "docs": [
+    "https://github.com/even-realities/everything-evenhub/blob/main/plugins/everything-evenhub/skills/background-state/SKILL.md",
+    "https://unpkg.com/@evenrealities/even_hub_sdk@0.0.16/dist/index.d.ts"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-07-09",
+      "versions": {
+        "sdk": "0.0.11"
+      },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/16",
+      "note": "Checked the published dist/index.d.ts and index.js of 0.0.10 and 0.0.11."
+    },
+    {
+      "level": "runtime",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.16",
+        "browser": "Chromium 157.0.8103.51"
+      },
+      "source": "scripts/probes/even-sdk-exports.mjs",
+      "note": "The module has 69 exports; neither function is one of them. The skill on main still imports both as of 2026-11-17."
+    },
+    {
+      "level": "runtime",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.10",
+        "browser": "Chromium 157.0.8103.51"
+      },
+      "source": "scripts/probes/even-sdk-exports.mjs",
+      "note": "Neither function exported."
+    }
+  ],
+  "repro": "scripts/probes/even-sdk-exports.mjs"
+}

@@ -38,3 +38,34 @@ export function markdownFiles(dir = '.') {
   }
   return out;
 }
+
+// Compatibility records in data/records/<device>/<id>.json, as { path, record }.
+export function records() {
+  const dir = path.join(root, 'data', 'records');
+  const out = [];
+  for (const device of readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name).sort()) {
+    for (const file of readdirSync(path.join(dir, device)).filter(f => f.endsWith('.json')).sort()) {
+      out.push({ path: `data/records/${device}/${file}`, record: JSON.parse(readFileSync(path.join(dir, device, file), 'utf8')) });
+    }
+  }
+  return out;
+}
+
+export const LEVELS = ['reported', 'runtime', 'simulator', 'hardware'];
+
+// The reproduced evidence that reached the highest level, latest first among equals.
+export function strongest(record) {
+  return (record.evidence ?? [])
+    .filter(e => e.result === 'reproduced')
+    .sort((a, b) => LEVELS.indexOf(b.level) - LEVELS.indexOf(a.level) || b.date.localeCompare(a.date))[0];
+}
+
+// Compares dotted version strings numerically. Non-numeric parts compare as 0.
+export function compareVersions(a, b) {
+  const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+  const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    if ((pa[i] ?? 0) !== (pb[i] ?? 0)) return (pa[i] ?? 0) - (pb[i] ?? 0);
+  }
+  return 0;
+}

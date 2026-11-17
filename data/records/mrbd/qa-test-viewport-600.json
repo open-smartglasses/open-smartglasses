@@ -1,0 +1,25 @@
+{
+  "id": "qa-test-viewport-600",
+  "device": "mrbd",
+  "title": "The simulator QA Test wants width=600 in the viewport meta; the docs say device-width",
+  "kind": "contradiction",
+  "claim": "The display and layout page says not to hardcode a 600-pixel layout and to declare width=device-width, initial-scale=1. The Web Apps plugin's build skill and test script also require width=device-width. The Meta Ray-Ban Display Simulator's QA Test passes its 600x600 viewport check only when the tag has width=600 and height=600.",
+  "actual": "No single viewport tag passes both. An app scaffolded with the AI Toolkit initializer and built to the docs fails this check in simulator 0.6.0, while the Toolkit validator and the plugin's test script pass it. Meta's game plugin docs and its Snake example use width=600, height=600.",
+  "impact": "Apps built to the docs fail the simulator's quality checklist. Changing the tag to pass it fails the plugin's own check.",
+  "workaround": "Keep width=device-width, initial-scale=1 as the docs say, and expect this QA Test item to fail.",
+  "docs": [
+    "https://wearables.developer.meta.com/docs/develop/webapps/build/display-and-layout/",
+    "https://wearables.developer.meta.com/docs/develop/webapps/test/",
+    "https://github.com/meta/meta-wearables-webapp/blob/main/plugins/meta-wearables-webapp/skills/ai-glasses-webapp-build/SKILL.md"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-13",
+      "versions": { "simulator": "0.6.0", "toolkit": "129.0.0", "browser": "Chrome", "os": "macOS" },
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/28",
+      "note": "Part 1 of the report."
+    }
+  ]
+}

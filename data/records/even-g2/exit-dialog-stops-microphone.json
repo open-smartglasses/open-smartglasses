@@ -1,0 +1,32 @@
+{
+  "id": "exit-dialog-stops-microphone",
+  "device": "even-g2",
+  "title": "After the exit dialog appears, the microphone will not open until the app is relaunched",
+  "kind": "undocumented",
+  "claim": "Nothing official says the exit dialog affects audioControl. The App Submission & QA Guidelines require a root-page double tap to call shutDownPageContainer(1), the system exit dialog.",
+  "actual": "One team reports that once the exit dialog has been shown and cancelled, audioControl(true, AudioInputSource.Glasses) returns false within a few milliseconds for the rest of the launch. audioControl(false) first, waitForEvenAppBridge() and rebuildPageContainer do not clear it; restarting the app does. Turning the display off from the app's own menu did not cause it. A separate report sees the same persistent refusal, for the phone microphone too, but names no trigger. That it has the same cause is the first team's guess, not confirmed.",
+  "impact": "Voice apps stop hearing the user after the user opens and cancels the exit dialog, which store apps must offer on the root page. The call returns only false, with no reason.",
+  "workaround": "Reach the dialog only from an explicit Exit item in an in-app menu. When audioControl(true) keeps returning false, ask the user to relaunch the app.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/ship/app-submission",
+    "https://hub.evenrealities.com/docs/build/device-apis"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-08-23",
+      "versions": { "sdk": "0.0.14", "app": "2.2.9", "firmware": "2.2.8.4" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/18#issuecomment-5386946987",
+      "note": "Five episodes over two days and two builds, text-only app. The same team saw it again on firmware 2.2.10 on 2026-09-07: https://github.com/even-realities/everything-evenhub/issues/35#issuecomment-5600066964"
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-03",
+      "versions": { "sdk": "0.0.14", "os": "iOS" },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/35",
+      "note": "Glasses and phone sources both refused in 2-6 ms until the app was reopened; also seen with a bundle on SDK 0.0.12. The report names no trigger and does not say whether the exit dialog had been shown."
+    }
+  ]
+}

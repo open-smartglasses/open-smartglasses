@@ -1,0 +1,54 @@
+{
+  "id": "quickstart-reads-taps-from-text-event",
+  "device": "even-g2",
+  "title": "The quickstart reads taps from textEvent, but taps arrive in sysEvent",
+  "kind": "contradiction",
+  "claim": "The Your First App page counts taps from event.textEvent and returns early when it is missing. The handle-input skill says presses on a text container arrive as event.sysEvent, and only scrolls arrive as event.textEvent.",
+  "actual": "On simulator 0.9.5 and on G2 hardware, a tap arrives as a sysEvent whose whole payload is { eventSource: 1 }. textEvent is never set, so the quickstart handler returns before counting and the counter stays at 0. Reports disagree on hardware: one report on SDK 0.0.13 sees a text-container click event and then a sysEvent for each press, and the quickstart handler would count that click. The page still reads textEvent as of 2026-11-17.",
+  "impact": "Anyone who follows the quickstart exactly gets a page that renders and ignores taps. The page is the first app most developers build.",
+  "workaround": "Read presses from sysEvent with eventType ?? 0, as the handle-input skill does. If a text-container click can also arrive, act on only one of the two.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/get-started/quickstart/first-app",
+    "https://github.com/even-realities/everything-evenhub/blob/main/plugins/everything-evenhub/skills/handle-input/SKILL.md"
+  ],
+  "disputed": true,
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-02",
+      "versions": {
+        "sdk": "0.0.14",
+        "cli": "0.1.14",
+        "simulator": "0.9.5",
+        "app": "2.2.10",
+        "os": "iOS"
+      },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/30",
+      "note": "Nine taps on a temple of real G2 glasses gave nine identical sysEvent payloads and no textEvent. Same result in the simulator. Simulator on macOS 15."
+    },
+    {
+      "level": "reported",
+      "result": "not-reproduced",
+      "date": "2026-09-09",
+      "versions": {
+        "sdk": "0.0.13"
+      },
+      "source": "https://github.com/nickustinov/even-g2-notes/issues/3",
+      "note": "On hardware, each press delivered the text container's click event with no eventType, then a sysEvent about 350 ms later. Even App 2.2.x, minor version not given."
+    },
+    {
+      "level": "simulator",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.16",
+        "simulator": "0.9.5",
+        "os": "Windows 11"
+      },
+      "source": "scripts/probes/even-simulator.mjs",
+      "note": "One text container with isEventCapture 1. Each click arrived as a sysEvent only; textEvent was never set. Same on SDK 0.0.14."
+    }
+  ],
+  "repro": "scripts/probes/even-simulator.mjs"
+}

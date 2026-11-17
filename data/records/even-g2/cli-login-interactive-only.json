@@ -1,0 +1,23 @@
+{
+  "id": "cli-login-interactive-only",
+  "device": "even-g2",
+  "title": "The CLI has no non-interactive login; CI must reuse a copied session",
+  "kind": "documented-limit",
+  "claim": "The CLI Accounts page says evenhub login needs an interactive terminal, even with --json. For CI it says to log in on a workstation, store credentials.yaml as a secret and restore it in the job. The cli-reference skill says there is no non-interactive login.",
+  "actual": "A CI job or a cloud agent cannot sign in on its own. It can upload only with a copy of a developer's credentials.yaml, which carries the whole account session, including commands such as rm and delist. When the stored refresh token expires or is revoked, a person must log in again and replace the secret; evenhub logout in any job revokes it. The docs do not say whether a refresh replaces the refresh token. evenhub pack needs no credentials, so packaging works in CI.",
+  "impact": "Unattended pipelines and sandboxed agents need a human login on a workstation before they can upload, and authenticated commands exit 2 once the stored session has expired.",
+  "workaround": "Store credentials.yaml as a CI secret under a job-owned XDG_CONFIG_HOME, delete the local copy after the job, and never run evenhub logout in CI.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/cli/auth",
+    "https://github.com/even-realities/everything-evenhub/blob/main/plugins/everything-evenhub/skills/cli-reference/SKILL.md"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-11-04",
+      "source": "https://github.com/even-realities/everything-evenhub/issues/46",
+      "note": "Feature request from a developer who uploads from sandboxed agent sessions; asks for scoped tokens or device-code login."
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "id": "hot-reload-blank-display",
+  "device": "even-g2",
+  "title": "Hot reload leaves a blank display: createStartUpPageContainer returns 1",
+  "kind": "contradiction",
+  "claim": "The Your First App page says that after editing main.ts, Vite hot-reloads and the simulator refreshes, and that hot reload also works on the glasses. The Page Lifecycle page says createStartUpPageContainer is called exactly once at startup.",
+  "actual": "A hot reload runs main.ts again in the same app launch. createStartUpPageContainer then returns 1 (invalid parameters) every time, also on ten retries 250 ms apart, because a page already exists. The display goes blank or keeps a stale frame, and nothing shows the error. A fresh simulator launch returns 0. rebuildPageContainer returns true on some reloads and false on others. On hardware, a second call in the same launch blocked about 2.1 s and returned 1.",
+  "impact": "A developer following the quickstart sees a frozen or blank display after the first edit and takes it for an event bug.",
+  "workaround": "Relaunch the simulator or the app after each edit, or call rebuildPageContainer when createStartUpPageContainer returns 1 and check that result too.",
+  "docs": [
+    "https://hub.evenrealities.com/docs/get-started/quickstart/first-app",
+    "https://hub.evenrealities.com/docs/build/page-lifecycle"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-09-02",
+      "versions": {
+        "sdk": "0.0.14",
+        "simulator": "0.9.5",
+        "os": "macOS 15"
+      },
+      "source": "https://github.com/even-realities/everything-evenhub/issues/32",
+      "note": "Vite 8.2.2."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-07-31",
+      "versions": {
+        "sdk": "0.0.13",
+        "app": "2.2.7",
+        "firmware": "2.2.7.14"
+      },
+      "source": "https://github.com/nickustinov/even-g2-notes/blob/main/docs/page-lifecycle.md",
+      "note": "On hardware, as a recovery attempt after the exit dialog, not after a hot reload. Concludes the call is one-shot per session."
+    },
+    {
+      "level": "simulator",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.16",
+        "simulator": "0.9.5",
+        "os": "Windows 11"
+      },
+      "source": "scripts/probes/even-simulator.mjs",
+      "note": "createStartUpPageContainer returned 0 on the first call and 1 on a second call in the same load and after each of 10 reloads. rebuildPageContainer returned true after all 10 reloads; the intermittent false in the report was not seen."
+    },
+    {
+      "level": "simulator",
+      "result": "reproduced",
+      "date": "2026-11-17",
+      "versions": {
+        "sdk": "0.0.14",
+        "simulator": "0.9.5",
+        "os": "Windows 11"
+      },
+      "source": "scripts/probes/even-simulator.mjs",
+      "note": "Same as on 0.0.16, rebuildPageContainer true after all 10 reloads."
+    }
+  ],
+  "repro": "scripts/probes/even-simulator.mjs"
+}

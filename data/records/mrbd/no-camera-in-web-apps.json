@@ -1,0 +1,30 @@
+{
+  "id": "no-camera-in-web-apps",
+  "device": "mrbd",
+  "title": "Web apps cannot use the glasses camera",
+  "kind": "undocumented",
+  "claim": "The Web Apps overview lists what web apps can use: the display, Neural Band and touch input, motion and orientation, the phone's location and local storage. The FAQ lists the camera for the Device Access Toolkit only. No page says whether getUserMedia() works, and a web developer would try it.",
+  "actual": "Web apps get no camera access. One developer reports that standard web APIs such as getUserMedia() give none, while the native Device Access Toolkit does; another reports the same without naming an API. A Meta maintainer labelled the second report as an enhancement request. Neither report says how the call fails.",
+  "impact": "Camera features such as QR scanning cannot be built as a web app.",
+  "workaround": "Build camera features as a native app with the Device Access Toolkit. Meta has not said how to combine it with a web app.",
+  "docs": [
+    "https://wearables.developer.meta.com/docs/develop/webapps/",
+    "https://developers.meta.com/wearables/faq/"
+  ],
+  "evidence": [
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-06-17",
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/13",
+      "note": "Labelled enhancement by a Meta maintainer on 2026-06-30."
+    },
+    {
+      "level": "reported",
+      "result": "reproduced",
+      "date": "2026-10-21",
+      "source": "https://github.com/meta/meta-wearables-webapp/issues/33",
+      "note": "Names getUserMedia(). Open, no reply from Meta as of 2026-11-17."
+    }
+  ]
+}

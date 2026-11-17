@@ -24,6 +24,17 @@ The app is a web page in a WebView on the glasses. Ordinary HTML, CSS and JavaSc
 - No password or date inputs.
 - Ask for motion, orientation or location permission inside a user action.
 
+## Known issues
+
+Open [compatibility records](../../data/records) for Meta Ray-Ban Display. Each says how far it was reproduced.
+
+<!-- generated:notes-mrbd -->
+- **Web apps cannot use the glasses camera.** Build camera features as a native app with the Device Access Toolkit. Meta has not said how to combine it with a web app. ([record](../../data/records/mrbd/no-camera-in-web-apps.json), reported)
+- **The simulator QA overflow check flags hidden UI Toolkit elements.** Treat these two findings as false positives after checking by hand that nothing scrolls sideways. ([record](../../data/records/mrbd/qa-test-overflow-hidden-elements.json), reported)
+- **The simulator QA Test wants width=600 in the viewport meta; the docs say device-width.** Keep width=device-width, initial-scale=1 as the docs say, and expect this QA Test item to fail. ([record](../../data/records/mrbd/qa-test-viewport-600.json), reported)
+- **WebMCP tools register, but Meta AI never calls them.** Keep every tool action reachable by hand, as the page already requires, and do not rely on voice invocation. ([record](../../data/records/mrbd/webmcp-tools-never-invoked.json), reported)
+<!-- /generated -->
+
 ## Check
 
 ```bash
