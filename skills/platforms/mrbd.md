@@ -11,7 +11,7 @@ The app is a web page in a WebView on the glasses. Ordinary HTML, CSS and JavaSc
 - Test at 600×600, device pixel ratio 1. Do not hard-code the size: use `<meta name="viewport" content="width=device-width, initial-scale=1">` and relative units.
 - Additive color. Black is transparent.
 - About 42 pixels per degree, a press figure. 0.6° is 25px.
-- Text never below 16px.
+- Text in controls never below 14px.
 
 ## Input
 

@@ -37,7 +37,7 @@ If the user has not said which device, ask. Then read the note for that platform
 
 - Minimum size is 0.6° of visual angle. Multiply by the device's pixels per degree: 25px on Meta Ray-Ban Display, 18sp on Android XR.
 - Set most text at 0.7° to 0.9°: 29 to 38px on Meta Ray-Ban Display.
-- Never go below the vendor minimum: 16px on Meta Ray-Ban Display.
+- Never set text in a control below the vendor minimum: 14px on Meta Ray-Ban Display.
 - Weight 400 or heavier. No thin or light weights, no condensed faces.
 - Let text wrap. No fixed-height text boxes.
 - On Even G2 the font is fixed. Count characters instead: about 400 to 500 fill the screen, and a list item holds 64.

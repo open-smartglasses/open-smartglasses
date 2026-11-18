@@ -20,9 +20,9 @@ node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2 --m
 ```
 
 ```
-error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Display.
-       vendor rule, grade: docs, https://wearables.developer.meta.com/docs/...
-       - 11.4px  "World time"  div.row > div.row-main > div.row-sub
+error  text/min-size  1 text node(s) in controls below the 14px minimum for interactive elements on Meta Ray-Ban Display.
+       vendor rule, grade: docs, https://github.com/meta/meta-wearables-webapp/blob/main/...
+       - 12px  "Stop"  body > main > button.meta
 ```
 
 결과마다 기준의 출처가 붙는다. 벤더 규칙, 벤더 지침에서 유도한 값, 프로젝트 규칙 중 하나다. `--json`을 붙이면 기계가 읽는 형식으로 나온다. error 등급 규칙에 걸리면 종료 코드가 1이다.
@@ -35,10 +35,10 @@ Meta Ray-Ban Display는 첫 화면을 렌더링해 글자, 색, 레이아웃, �
 
 ## 왜 필요한가
 
-2026-11-12에 공개된 Ray-Ban Display 웹 앱 249개를 600×600으로 띄워 쟀다. 첫 화면에 글자가 있는 219개 가운데:
+2026-11-18에 공개된 Ray-Ban Display 웹 앱 253개를 600×600으로 띄워 쟀다. 첫 화면에 글자가 있는 228개 가운데:
 
-- 68%에 Meta 자체 하한인 16px보다 작은 글자가 있다.
-- 본문 글자가 시야각 0.6° 이상인 앱은 4%다. 0.6°는 Google이 디스플레이 안경에 제시한 최소 크기다.
+- 25%는 조작 요소 안의 글자가 14px보다 작다. 14px는 Meta 디스플레이 가이드라인이 조작 요소에 정한 하한이다.
+- 본문 글자가 시야각 0.6° 이상인 앱은 5%다. 0.6°는 Google이 디스플레이 안경에 제시한 최소 크기다.
 
 본문 글자 크기의 중앙값은 웹 기본값인 16px이었다. 열린 앱 전체로 보면 53%가 뷰포트 너비를 600px로 고정한다. Meta 레이아웃 가이드는 하지 말라고 하는데, Meta 시뮬레이터의 QA 테스트는 바로 그 값을 요구한다([열린 보고](https://github.com/meta/meta-wearables-webapp/issues/28)).
 

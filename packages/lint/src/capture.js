@@ -53,6 +53,10 @@ function collect() {
     return r.width >= 1 && r.height >= 1 && r.bottom > 0 && r.right > 0 && r.top < vh && r.left < vw;
   };
 
+  // Controls the wearer can move focus to
+  const focusable = 'a[href], button, input:not([type=hidden]), select, textarea, [tabindex], [role=button], [role=link]';
+  const reachable = el => el && !el.disabled && el.tabIndex >= 0;
+
   // Text
   const texts = [];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -84,12 +88,11 @@ function collect() {
       stretch: parseFloat(style.fontStretch) || 100,
       luminance: color ? luminance(color) : null,
       surfaceLuminance: surfaceLuminance(el),
+      interactive: Boolean(reachable(el.closest(focusable))),
       selector: describe(el),
     });
   }
 
-  // Controls the wearer can move focus to
-  const focusable = 'a[href], button, input:not([type=hidden]), select, textarea, [tabindex], [role=button], [role=link]';
   const nameOf = el =>
     (
       el.getAttribute('aria-label') ||
@@ -105,7 +108,7 @@ function collect() {
       .replace(/\s+/g, ' ')
       .trim();
   const controls = [...document.querySelectorAll(focusable)]
-    .filter(el => !el.disabled && el.tabIndex >= 0 && isShown(el))
+    .filter(el => reachable(el) && isShown(el))
     .map(el => ({
       selector: describe(el),
       tag: el.tagName.toLowerCase(),

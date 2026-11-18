@@ -20,9 +20,9 @@ node packages/lint/bin/osg-lint.js https://your-app.example --device even-g2 --m
 ```
 
 ```
-error  text/min-size  13 text node(s) below the 16px minimum for Meta Ray-Ban Display.
-       vendor rule, grade: docs, https://wearables.developer.meta.com/docs/...
-       - 11.4px  "World time"  div.row > div.row-main > div.row-sub
+error  text/min-size  1 text node(s) in controls below the 14px minimum for interactive elements on Meta Ray-Ban Display.
+       vendor rule, grade: docs, https://github.com/meta/meta-wearables-webapp/blob/main/...
+       - 12px  "Stop"  body > main > button.meta
 ```
 
 Each finding says where its threshold comes from: a vendor rule, a value derived from vendor guidance, or a project rule. Add `--json` for machine-readable output. The exit code is 1 when an error-level rule fails.
@@ -35,10 +35,10 @@ Copy [`skills/hud-design`](./skills/hud-design) and [`skills/hud-review`](./skil
 
 ## Why
 
-We rendered 249 public Ray-Ban Display web apps at 600×600 on 2026-11-12. Of the 219 that show text on the first screen:
+We rendered 253 public Ray-Ban Display web apps at 600×600 on 2026-11-18. Of the 228 that show text on the first screen:
 
-- 68% have text below Meta's own 16px minimum.
-- 4% have body text at or above 0.6° of visual angle, the minimum Google gives for display glasses.
+- 25% have text in a control below 14px, the minimum Meta's display guidelines set for interactive elements.
+- 5% have body text at or above 0.6° of visual angle, the minimum Google gives for display glasses.
 
 The median body text size was 16px, the web default. Across all the apps that loaded, 53% fix the viewport width at 600px. Meta's layout guide says not to; the QA test in Meta's simulator asks for exactly that ([open report](https://github.com/meta/meta-wearables-webapp/issues/28)).
 

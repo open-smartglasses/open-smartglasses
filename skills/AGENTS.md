@@ -3,7 +3,7 @@
 This app runs on a smart glasses display. It is small, see-through and read in a glance. Input is a few gestures.
 
 - One task per screen. Headers of two words. At most 7 choices.
-- Text at least 0.6° of visual angle (25px on Meta Ray-Ban Display), never below the vendor minimum (16px there). Weight 400 or heavier.
+- Text at least 0.6° of visual angle (25px on Meta Ray-Ban Display). Text in a control never below the vendor minimum (14px there). Weight 400 or heavier.
 - Black background. Black is transparent. Light content on dark surfaces, few lit pixels.
 - Do not show state by color alone.
 - Navigation works with move, select and back only. No hover, no drag, no text entry.

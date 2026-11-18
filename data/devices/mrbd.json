@@ -30,11 +30,12 @@
     }
   },
   "text": {
-    "minPx": {
-      "value": 16,
+    "minInteractivePx": {
+      "value": 14,
       "grade": "docs",
-      "source": "https://wearables.developer.meta.com/docs/develop/webapps/wearables-web-app-game-plugin/",
-      "checked": "2026-11-12"
+      "source": "https://github.com/meta/meta-wearables-webapp/blob/main/plugins/meta-wearables-webapp-game/docs/display-guidelines.md#typography",
+      "checked": "2026-11-18",
+      "note": "No font size below 14dp for interactive elements. The type scale for other text goes down to 10dp. The display is 600x600dp and web apps get a 600x600 CSS px viewport, so 1dp is 1px. The game plugin's own contract asks games for 16px."
     }
   },
   "input": {

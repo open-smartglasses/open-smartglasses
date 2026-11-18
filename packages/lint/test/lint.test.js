@@ -21,7 +21,7 @@ test('a screen that follows the rules passes', async () => {
   assert.deepEqual(result.findings, []);
 });
 
-test('text below the vendor minimum is an error, text below 0.6 degrees a warning', async () => {
+test('text in a control below the vendor minimum is an error, text below 0.6 degrees a warning', async () => {
   const result = await run('small-text.html');
   assert.deepEqual(found(result), ['error text/min-size', 'warn text/min-size']);
   const [error, warning] = result.findings;
@@ -30,6 +30,12 @@ test('text below the vendor minimum is an error, text below 0.6 degrees a warnin
   assert.equal(error.basis, 'vendor');
   assert.equal(warning.basis, 'derived');
   assert.equal(warning.grade, 'press');
+});
+
+test('small text outside a control is only a warning', async () => {
+  const result = await run('small-label.html');
+  assert.deepEqual(found(result), ['warn text/min-size']);
+  assert.deepEqual(result.findings[0].nodes.map(n => n.px), [12, 18]);
 });
 
 // Each fixture breaks one rule and nothing else.

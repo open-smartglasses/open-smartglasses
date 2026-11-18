@@ -9,16 +9,18 @@ export default {
   id: 'text/min-size',
   run({ page, device }) {
     const findings = [];
-    const floor = device.text?.minPx;
+    const floor = device.text?.minInteractivePx;
     const ppd = device.display.ppd;
+    const reported = new Set();
 
     if (floor?.value) {
-      const small = page.texts.filter(t => t.px < floor.value);
+      const small = page.texts.filter(t => t.interactive && t.px < floor.value);
       if (small.length) {
+        small.forEach(t => reported.add(t));
         findings.push({
           severity: 'error',
           basis: 'vendor',
-          message: `${small.length} text node(s) below the ${floor.value}px minimum for ${device.name}.`,
+          message: `${small.length} text node(s) in controls below the ${floor.value}px minimum for interactive elements on ${device.name}.`,
           source: floor.source,
           grade: floor.grade,
           nodes: bySize(small),
@@ -28,8 +30,7 @@ export default {
 
     if (ppd?.value) {
       const limit = MIN_DEG * ppd.value;
-      const from = floor?.value ?? 0;
-      const small = page.texts.filter(t => t.px >= from && t.px < limit);
+      const small = page.texts.filter(t => !reported.has(t) && t.px < limit);
       if (small.length) {
         findings.push({
           severity: 'warn',
