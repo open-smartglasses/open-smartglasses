@@ -4,7 +4,9 @@ import path from 'node:path';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // The published package ships a copy in ./devices; in the repo the source is data/devices.
-const dirs = [path.join(here, '..', 'devices'), path.join(here, '..', '..', '..', 'data', 'devices')];
+const shipped = path.join(here, '..', 'devices');
+const repo = path.join(here, '..', '..', '..', 'data', 'devices');
+const dirs = here.split(path.sep).includes('node_modules') ? [shipped] : [repo, shipped];
 
 function deviceDir() {
   const dir = dirs.find(existsSync);

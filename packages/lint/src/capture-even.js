@@ -44,7 +44,7 @@ function toPage(data) {
   const containers = [];
   for (const c of data?.textObject ?? []) {
     const content = c.content ?? '';
-    containers.push({ kind: 'text', ...rect(c), content, createdChars: content.length, createdBytes: utf8Bytes(content) });
+    containers.push({ kind: 'text', ...rect(c), content, createdChars: [...content].length, createdBytes: utf8Bytes(content) });
   }
   for (const c of data?.listObject ?? []) {
     containers.push({ kind: 'list', ...rect(c), items: c.itemContainer?.itemName ?? [] });

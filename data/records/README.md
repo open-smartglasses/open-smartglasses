@@ -75,7 +75,7 @@ Scripts in [`scripts/probes`](../../scripts/probes) reproduce records. Each reco
 
 ## Checks built on records
 
-The lint cites a record when a finding rests on it. `input/tap-form` taps an Even Hub app in the form the host sends and in the forms apps expect, from [`tap-has-no-event-type`](./even-g2/tap-has-no-event-type.json) and [`quickstart-reads-taps-from-text-event`](./even-g2/quickstart-reads-taps-from-text-event.json).
+The lint cites a record when a finding rests on it. `input/tap-form` taps an Even Hub app in the form the host sends and in the forms apps expect, from [`tap-has-no-event-type`](./even-g2/tap-has-no-event-type.json) and [`quickstart-reads-taps-from-text-event`](./even-g2/quickstart-reads-taps-from-text-event.json). `text/length` warns on a text update over 1,999 UTF-8 bytes, from [`text-limits-in-bytes`](./even-g2/text-limits-in-bytes.json).
 
 ## Adding a record
 

@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
-import { lint, lintManifest, listDevices } from '../src/index.js';
+import { lint, lintManifest, listDevices, loadDevice, rules } from '../src/index.js';
 import { format } from '../src/report.js';
+
+const checkable = listDevices().filter(id => loadDevice(id).runtime in rules);
 
 const HELP = `Usage: osg-lint <url or file> [options]
        osg-lint --device even-g2 --manifest <app.json> [url or file]
 
 Options:
-  -d, --device <id>        Device profile (default: mrbd). Available: ${listDevices().join(', ')}
+  -d, --device <id>        Device profile (default: mrbd). Available: ${checkable.join(', ')}
       --manifest <file>    Also check an Even Hub app.json against the store rules
       --no-taps            Do not send taps to an Even Hub app
       --json               Print the result as JSON
@@ -17,17 +19,23 @@ Options:
 The Even Hub check sends taps to the app. Run it on a local build or with a test backend.
 Exit code is 1 when an error-level rule fails.`;
 
-const { values, positionals } = parseArgs({
-  allowPositionals: true,
-  options: {
-    device: { type: 'string', short: 'd', default: 'mrbd' },
-    json: { type: 'boolean', default: false },
-    screenshot: { type: 'string' },
-    manifest: { type: 'string' },
-    'no-taps': { type: 'boolean', default: false },
-    help: { type: 'boolean', short: 'h', default: false },
-  },
-});
+let values, positionals;
+try {
+  ({ values, positionals } = parseArgs({
+    allowPositionals: true,
+    options: {
+      device: { type: 'string', short: 'd', default: 'mrbd' },
+      json: { type: 'boolean', default: false },
+      screenshot: { type: 'string' },
+      manifest: { type: 'string' },
+      'no-taps': { type: 'boolean', default: false },
+      help: { type: 'boolean', short: 'h', default: false },
+    },
+  }));
+} catch (error) {
+  console.error(`${error.message}\n\n${HELP}`);
+  process.exit(2);
+}
 
 if (values.help || positionals.length > 1 || (positionals.length === 0 && !values.manifest)) {
   console.log(HELP);

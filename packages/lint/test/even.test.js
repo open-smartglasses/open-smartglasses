@@ -30,6 +30,7 @@ test('a page within the limits passes', async () => {
 const cases = [
   ['too-many.html', ['error container/count', 'error container/count']],
   ['bounds.html', ['error container/bounds']],
+  ['bounds-negative.html', ['error container/bounds']],
   ['image-size.html', ['error container/image-size']],
   ['name.html', ['error container/name']],
   ['capture-none.html', ['error input/event-capture']],
@@ -40,6 +41,7 @@ const cases = [
   ['text.html', ['error text/length']],
   ['text-korean.html', ['error text/length']],
   ['update.html', ['error text/length']],
+  ['update-korean.html', ['warn text/length']],
   ['none.html', ['warn page/none']],
   ['tap-typed.html', ['warn input/tap-form']],
   ['tap-text.html', ['warn input/tap-form']],

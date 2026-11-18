@@ -3,8 +3,12 @@ import { utf8Bytes } from '../capture-even.js';
 import { loadRecord } from '../records.js';
 
 const CHOICE_LIMIT = 7;
+// The text update buffer, from the firmware analysis in the text-limits-in-bytes record.
+const UPDATE_BYTES = 1999;
 const BYTES_HINT = 'Text is counted in UTF-8 bytes: Korean, Japanese and Chinese characters take 3 each.';
 const label = c => ({ selector: `${c.kind} "${c.name || c.id}"`, text: c.content ?? '' });
+// Characters as Unicode code points, not UTF-16 units.
+const chars = s => [...s].length;
 const short = s => (s.length > 40 ? `${s.slice(0, 40)}…` : s);
 
 // A finding backed by a compatibility record in data/records.
@@ -63,12 +67,14 @@ export const containerBounds = {
   run({ page, device }) {
     const fact = device.display.viewport;
     const [width, height] = fact.value;
-    const out = page.containers.filter(c => c.x < 0 || c.y < 0 || c.x + c.width > width || c.y + c.height > height);
+    const fits = c =>
+      [c.x, c.y, c.width, c.height].every(n => Number.isFinite(n) && n >= 0) && c.x + c.width <= width && c.y + c.height <= height;
+    const out = page.containers.filter(c => !fits(c));
     if (!out.length) return [];
     return [
       vendor(
         fact,
-        `${out.length} container(s) reach outside the ${width}x${height} display.`,
+        `${out.length} container(s) do not fit the ${width}x${height} display.`,
         out.map(c => ({ selector: `${c.kind} "${c.name || c.id}"`, text: `${c.x},${c.y} ${c.width}x${c.height}` })),
       ),
     ];
@@ -161,15 +167,25 @@ export const textLength = {
         ),
       );
     }
-    const updates = page.updates.filter(u => u.content.length > textUpgradeChars.value);
+    const updates = page.updates.filter(u => chars(u.content) > textUpgradeChars.value);
     if (updates.length) {
       findings.push(
         vendor(
           textUpgradeChars,
           `${updates.length} text update(s) longer than ${textUpgradeChars.value} characters.`,
-          updates.map(u => ({ selector: `text "${u.name || u.id}"`, text: `${u.content.length} characters` })),
+          updates.map(u => ({ selector: `text "${u.name || u.id}"`, text: `${chars(u.content)} characters` })),
         ),
       );
+    }
+    const wide = page.updates.filter(u => chars(u.content) <= textUpgradeChars.value && utf8Bytes(u.content) > UPDATE_BYTES);
+    if (wide.length) {
+      findings.push({
+        ...fromRecord(
+          'text-limits-in-bytes',
+          `${wide.length} text update(s) longer than ${UPDATE_BYTES} bytes. A firmware analysis found that an update holds ${UPDATE_BYTES} bytes, not ${textUpgradeChars.value} characters. ${BYTES_HINT}`,
+        ),
+        nodes: wide.map(u => ({ selector: `text "${u.name || u.id}"`, text: `${utf8Bytes(u.content)} bytes` })),
+      });
     }
     return findings;
   },
@@ -204,8 +220,8 @@ export const tapForm = {
         fromRecord(
           'tap-has-no-event-type',
           taps.container === 'list'
-            ? 'The app answers a list tap only when the event carries eventType 0 and the item index. The host leaves both out on the first item, so taps do nothing. Read eventType ?? 0 and currentSelectItemIndex ?? 0.'
-            : 'The app answers a tap only when sysEvent carries eventType 0. The host leaves eventType out of a single tap, so taps do nothing. Read event.sysEvent ? (event.sysEvent.eventType ?? 0) : null.',
+            ? 'The app called the host after a list tap that carried eventType 0 and the item index, and not after the tap the glasses send on the first item, which leaves both out. Read eventType ?? 0 and currentSelectItemIndex ?? 0.'
+            : 'The app called the host after a tap that carried eventType 0, and not after the tap the glasses send, which leaves eventType out. Read event.sysEvent ? (event.sysEvent.eventType ?? 0) : null.',
         ),
       );
     }
@@ -213,7 +229,7 @@ export const tapForm = {
       findings.push(
         fromRecord(
           'quickstart-reads-taps-from-text-event',
-          'The app answers a tap only when it arrives as a textEvent. In the simulator and in one hardware report a tap on a text container arrives as a sysEvent, so taps do nothing. Read taps from sysEvent too.',
+          'The app called the host after a tap sent as a textEvent, and not after the same tap sent as a sysEvent, which is how the simulator and one hardware report deliver it. Read taps from sysEvent too.',
         ),
       );
     }
